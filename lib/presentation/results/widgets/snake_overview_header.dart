@@ -118,10 +118,10 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: context.surfaceLightColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.border,
+          color: context.borderColor,
           width: 1,
         ),
       ),
@@ -130,14 +130,14 @@ class _InfoChip extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: AppColors.textTertiary,
+            color: context.textTertiaryColor,
             size: 16,
           ),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: TextStyle(
+              color: context.textSecondaryColor,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

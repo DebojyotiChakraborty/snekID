@@ -34,7 +34,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    // Keep page view and indicator in sync even if we navigate back into
+    // onboarding from somewhere else (e.g. Settings -> View onboarding).
+    final initialPage = ref.read(onboardingPageProvider);
+    _pageController = PageController(initialPage: initialPage);
   }
 
   @override

@@ -33,13 +33,17 @@ class ImageHeader extends StatelessWidget {
                   imageFile!,
                   fit: BoxFit.cover,
                 )
-              : Container(
-                  color: AppColors.surfaceLight,
-                  child: const Icon(
-                    MingCuteIcons.mgc_pic_line,
-                    size: 64,
-                    color: AppColors.textMuted,
-                  ),
+              : Builder(
+                  builder: (context) {
+                    return Container(
+                      color: context.surfaceLightColor,
+                      child: Icon(
+                        MingCuteIcons.mgc_pic_line,
+                        size: 64,
+                        color: context.textMutedColor,
+                      ),
+                    );
+                  },
                 ),
         ),
 
@@ -48,18 +52,22 @@ class ImageHeader extends StatelessWidget {
           left: 0,
           right: 0,
           bottom: 0,
-          child: Container(
-            height: 80,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  AppColors.background,
-                ],
-              ),
-            ),
+          child: Builder(
+            builder: (context) {
+              return Container(
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      context.backgroundColor,
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
 
@@ -75,12 +83,16 @@ class ImageHeader extends StatelessWidget {
           bottom: 16,
           left: 16,
           right: 16,
-          child: Text(
-            '${AppStrings.photoAnalyzedAt} $timeString',
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-            ),
+          child: Builder(
+            builder: (context) {
+              return Text(
+                '${AppStrings.photoAnalyzedAt} $timeString',
+                style: TextStyle(
+                  color: context.textSecondaryColor,
+                  fontSize: 12,
+                ),
+              );
+            },
           ),
         ),
       ],

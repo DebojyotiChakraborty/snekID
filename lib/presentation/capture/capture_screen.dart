@@ -49,8 +49,20 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    // Turn off flash before disposing
+    _turnOffFlash();
     _cameraController?.dispose();
     super.dispose();
+  }
+
+  Future<void> _turnOffFlash() async {
+    if (_cameraController != null && _cameraController!.value.isInitialized && _isFlashOn) {
+      try {
+        await _cameraController!.setFlashMode(FlashMode.off);
+      } catch (e) {
+        // Ignore errors when turning off flash
+      }
+    }
   }
 
   @override
@@ -60,9 +72,15 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     }
 
     if (state == AppLifecycleState.inactive) {
+      // Turn off flash when app becomes inactive
+      _turnOffFlash();
       _cameraController?.dispose();
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
+      // Reset flash state when camera is reinitialized
+      setState(() {
+        _isFlashOn = false;
+      });
     }
   }
 
@@ -180,10 +198,20 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     });
   }
 
-  void _onIdentify() {
+  void _onIdentify() async {
     if (_capturedImage != null) {
+      // Turn off flash before navigating
+      if (_isFlashOn) {
+        await _turnOffFlash();
+        setState(() {
+          _isFlashOn = false;
+        });
+      }
+      
       ref.read(selectedImageProvider.notifier).state = _capturedImage;
-      context.push(AppRoutes.results);
+      if (mounted) {
+        context.push(AppRoutes.results);
+      }
 
       // Reset state after navigation
       setState(() {
@@ -193,14 +221,17 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     }
   }
 
-  void _onHistory() {
-    // TODO: Navigate to history screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('History feature coming soon!'),
-        backgroundColor: AppColors.info,
-      ),
-    );
+  void _onHistory() async {
+    // Turn off flash before navigating to history
+    if (_isFlashOn) {
+      await _turnOffFlash();
+      setState(() {
+        _isFlashOn = false;
+      });
+    }
+    if (mounted) {
+      context.push(AppRoutes.history);
+    }
   }
 
   Future<void> _toggleFlash() async {
@@ -234,8 +265,17 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     }
   }
 
-  void _openSettings() {
-    context.push(AppRoutes.settings);
+  void _openSettings() async {
+    // Turn off flash before navigating to settings
+    if (_isFlashOn) {
+      await _turnOffFlash();
+      setState(() {
+        _isFlashOn = false;
+      });
+    }
+    if (mounted) {
+      context.push(AppRoutes.settings);
+    }
   }
 
   @override

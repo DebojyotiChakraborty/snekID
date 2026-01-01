@@ -37,14 +37,18 @@ class WarningBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              AppStrings.lowConfidenceWarning,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                height: 1.5,
-              ),
+          Expanded(
+            child: Builder(
+              builder: (context) {
+                return Text(
+                  AppStrings.lowConfidenceWarning,
+                  style: TextStyle(
+                    color: context.textPrimaryColor,
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                );
+              },
             ),
           ),
         ],

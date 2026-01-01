@@ -9,11 +9,16 @@ class SoundService {
   static final SoundService _instance = SoundService._();
   static SoundService get instance => _instance;
 
+  // Keeping a dedicated player avoids re-allocations, but we explicitly stop
+  // before each play so repeated taps always restart the sound.
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   /// Play the camera shutter sound
   Future<void> playShutterSound() async {
     try {
+      // Ensure we can replay even if the previous sound is still in a
+      // completed/playing state.
+      await _audioPlayer.stop();
       await _audioPlayer.play(
         AssetSource('sounds/camera_shutter.mp3'),
         volume: 0.7,

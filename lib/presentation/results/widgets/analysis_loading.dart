@@ -79,7 +79,7 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.background,
+      color: context.backgroundColor,
       child: SafeArea(
         child: Column(
           children: [
@@ -91,25 +91,25 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
             const SizedBox(height: 48),
 
             // Loading text
-            const Text(
+            Text(
               AppStrings.analyzing,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
-                color: AppColors.textPrimary,
+                color: context.textPrimaryColor,
               ),
             ),
 
             const SizedBox(height: 12),
 
-            const Text(
+            Text(
               AppStrings.analyzingDescription,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: context.textSecondaryColor,
               ),
             ),
 
@@ -187,7 +187,7 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
                       width: 2,
                     ),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     MingCuteIcons.mgc_search_ai_line,
                     size: 36,
                     color: AppColors.primary,

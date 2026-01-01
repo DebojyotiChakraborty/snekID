@@ -129,6 +129,8 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _viewOnboarding(BuildContext context, WidgetRef ref) async {
     HapticFeedback.lightImpact();
+    // Ensure onboarding opens with indicator/page at index 0.
+    ref.read(onboardingPageProvider.notifier).state = 0;
     await ref.read(onboardingControllerProvider.notifier).resetOnboarding();
     if (context.mounted) {
       context.go(AppRoutes.onboarding);

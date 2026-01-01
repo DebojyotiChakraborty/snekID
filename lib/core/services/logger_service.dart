@@ -11,13 +11,13 @@ class LoggerService {
       lineLength: 120, // Width of the output
       colors: true, // Colorful log messages
       printEmojis: true, // Print an emoji for each log message
-      printTime: true, // Should each log print contain a timestamp
+      dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
     ),
   );
 
-  /// Log a verbose message (lowest priority)
+  /// Log a trace message (lowest priority)
   static void v(dynamic message, [dynamic error, StackTrace? stackTrace]) {
-    _logger.v(message, error: error, stackTrace: stackTrace);
+    _logger.t(message, error: error, stackTrace: stackTrace);
   }
 
   /// Log a debug message

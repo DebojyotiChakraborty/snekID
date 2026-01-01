@@ -19,10 +19,10 @@ class MatchConfidenceCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.border,
+          color: context.borderColor,
           width: 1,
         ),
       ),
@@ -45,10 +45,10 @@ class MatchConfidenceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
+              Text(
                 AppStrings.mostLikelyMatch,
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.textSecondaryColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.5,
@@ -62,8 +62,8 @@ class MatchConfidenceCard extends StatelessWidget {
           // Species name
           Text(
             result.species.commonName,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: context.textPrimaryColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -74,8 +74,8 @@ class MatchConfidenceCard extends StatelessWidget {
           // Scientific name
           Text(
             result.species.scientificName,
-            style: const TextStyle(
-              color: AppColors.textTertiary,
+            style: TextStyle(
+              color: context.textTertiaryColor,
               fontSize: 14,
               fontStyle: FontStyle.italic,
             ),
