@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,36 +12,29 @@ import '../../providers/capture_provider.dart';
 import '../../providers/history_provider.dart';
 import '../../providers/identification_provider.dart';
 import '../../data/services/image_service.dart';
+import '../../data/models/snake_identification.dart';
 import 'widgets/analysis_loading.dart';
-import 'widgets/image_header.dart';
 import 'widgets/warning_banner.dart';
-import 'widgets/match_confidence_card.dart';
-import 'widgets/snake_overview_header.dart';
-import 'widgets/snake_info_sections.dart';
 
 /// Results screen showing snake identification
 class ResultsScreen extends ConsumerStatefulWidget {
-  const ResultsScreen({super.key});
+  final SnakeIdentification? identification;
+  final File? imageFile;
+
+  const ResultsScreen({
+    super.key,
+    this.identification,
+    this.imageFile,
+  });
 
   @override
   ConsumerState<ResultsScreen> createState() => _ResultsScreenState();
 }
 
-class _ResultsScreenState extends ConsumerState<ResultsScreen> {
+class _ResultsScreenState extends ConsumerState<ResultsScreen>
+    with SingleTickerProviderStateMixin {
   final ImageService _imageService = ImageService();
-  final ScrollController _scrollController = ScrollController();
-  
-  // Keys for each section to track their positions
-  final GlobalKey _overviewKey = GlobalKey();
-  final GlobalKey _behaviourKey = GlobalKey();
-  final GlobalKey _dangerKey = GlobalKey();
-  final GlobalKey _moreKey = GlobalKey();
-  
-  // Current active tab index based on scroll position
-  int _activeTabIndex = 0;
-  
-  // Flag to prevent scroll listener updates when programmatically scrolling
-  bool _isScrollingToSection = false;
+  late TabController _tabController;
   
   // Flag to track if history has been saved
   bool _hasSavedToHistory = false;
@@ -48,98 +42,29 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    _tabController = TabController(length: 4, vsync: this);
     
-    // Trigger identification when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startIdentification();
-    });
+    // Check if we have pre-loaded data
+    if (widget.identification != null) {
+      _hasSavedToHistory = true; // Already saved/historic
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (widget.imageFile != null) {
+          ref.read(selectedImageProvider.notifier).state = widget.imageFile;
+        }
+        ref.read(identificationProvider.notifier).setResult(widget.identification!);
+      });
+    } else {
+      // Trigger identification when screen loads
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startIdentification();
+      });
+    }
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+    _tabController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_isScrollingToSection) return;
-    
-    // Get the scroll offset
-    final scrollOffset = _scrollController.offset;
-    
-    // Calculate which section is currently in view
-    final behaviourOffset = _getWidgetOffset(_behaviourKey);
-    final dangerOffset = _getWidgetOffset(_dangerKey);
-    final moreOffset = _getWidgetOffset(_moreKey);
-    
-    // Buffer to determine active section (offset from top)
-    const buffer = 200.0;
-    
-    int newIndex = 0;
-    
-    if (moreOffset != null && scrollOffset >= moreOffset - buffer) {
-      newIndex = 3;
-    } else if (dangerOffset != null && scrollOffset >= dangerOffset - buffer) {
-      newIndex = 2;
-    } else if (behaviourOffset != null && scrollOffset >= behaviourOffset - buffer) {
-      newIndex = 1;
-    } else {
-      newIndex = 0;
-    }
-    
-    if (newIndex != _activeTabIndex) {
-      setState(() {
-        _activeTabIndex = newIndex;
-      });
-    }
-  }
-
-  double? _getWidgetOffset(GlobalKey key) {
-    final RenderObject? renderObject = key.currentContext?.findRenderObject();
-    if (renderObject == null) return null;
-    
-    final RenderAbstractViewport viewport = RenderAbstractViewport.of(renderObject);
-    final RevealedOffset offsetToReveal = viewport.getOffsetToReveal(renderObject, 0.0);
-    
-    return offsetToReveal.offset;
-  }
-
-  void _scrollToSection(int index) async {
-    GlobalKey targetKey;
-    switch (index) {
-      case 0:
-        targetKey = _overviewKey;
-        break;
-      case 1:
-        targetKey = _behaviourKey;
-        break;
-      case 2:
-        targetKey = _dangerKey;
-        break;
-      case 3:
-        targetKey = _moreKey;
-        break;
-      default:
-        return;
-    }
-    
-    final offset = _getWidgetOffset(targetKey);
-    if (offset != null) {
-      _isScrollingToSection = true;
-      setState(() {
-        _activeTabIndex = index;
-      });
-      
-      await _scrollController.animateTo(
-        offset - 100, // Offset to account for sticky header
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-      
-      _isScrollingToSection = false;
-    }
   }
 
   void _startIdentification() {
@@ -244,93 +169,204 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
             isFavoriteProvider(result.species.commonName),
           );
 
-          return Stack(
-            children: [
-              NestedScrollView(
-                controller: _scrollController,
-                headerSliverBuilder: (context, innerBoxIsScrolled) {
-                  return [
-                    // Image header with close button
-                    SliverToBoxAdapter(
-                      child: ImageHeader(
-                        imageFile: selectedImage,
-                        onClose: _onClose,
+          return NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  expandedHeight: 400.0,
+                  pinned: true,
+                  backgroundColor: context.backgroundColor,
+                  leading: IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.4),
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(MingCuteIcons.mgc_left_line, color: Colors.white),
                     ),
-
-                    // Warning banner (if low confidence)
-                    if (showWarning)
-                      const SliverToBoxAdapter(
-                        child: WarningBanner(),
+                    onPressed: _onClose,
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.4),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(MingCuteIcons.mgc_more_2_fill, color: Colors.white),
                       ),
-
-                    // Match confidence section
-                    SliverToBoxAdapter(
-                      child: MatchConfidenceCard(result: result),
+                      onPressed: () {
+                        // TODO: Show menu
+                      },
                     ),
-
-                    // Snake overview header
-                    SliverToBoxAdapter(
-                      child: SnakeOverviewHeader(result: result),
-                    ),
-
-                    // Sticky Tab bar
-                    SliverPersistentHeader(
-                      pinned: true,
-                      delegate: _StickyTabBarDelegate(
-                        activeIndex: _activeTabIndex,
-                        onTabTap: _scrollToSection,
-                      ),
-                    ),
-                  ];
-                },
-                body: SingleChildScrollView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      
-                      // All snake info sections
-                      SnakeInfoSections(
-                        result: result,
-                        overviewKey: _overviewKey,
-                        behaviourKey: _behaviourKey,
-                        dangerKey: _dangerKey,
-                        moreKey: _moreKey,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Disclaimer
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                        child: Text(
-                          AppStrings.disclaimer,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: context.textMutedColor,
-                            fontSize: 12,
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Image
+                        selectedImage != null
+                            ? Image.file(
+                                selectedImage,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                color: context.surfaceLightColor,
+                                child: Icon(
+                                  MingCuteIcons.mgc_pic_line,
+                                  size: 64,
+                                  color: context.textMutedColor,
+                                ),
+                              ),
+                        
+                        // Gradient Overlay
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.2),
+                                  Colors.black.withOpacity(0.8),
+                                ],
+                                stops: const [0.0, 0.5, 0.7, 1.0],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                      
-                      // Extra bottom padding for FAB and safe area
-                      SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
+
+                        // Snake Info Overlay
+                        Positioned(
+                          left: 16,
+                          right: 16,
+                          bottom: 24,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                result.species.commonName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                  height: 1.1,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                result.species.scientificName,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      // Badges
+                      _SnakeBadges(result: result),
+
+                      // Warning Banner
+                      if (showWarning) const WarningBanner(),
+
+                      // Match Confidence (Simplified or kept as is if informative)
+                      // We can keep it but maybe we don't need the header parts inside it?
+                      // For now, let's keep it as is, but it might be redundant.
+                      // Let's hide it if it's too redundant, but it has the percentage.
+                      // Maybe we can create a simpler version or just keep it.
+                      // MatchConfidenceCard(result: result),
+                      // Actually, the user's screenshot doesn't seem to show the confidence card in the middle.
+                      // I will omit it for now to match "this layout" closer, or maybe it's below?
+                      // The prompt says "entire page should be scrollable... not just the card part".
+                      // The previous card part was likely the MatchConfidenceCard.
+                      // I'll leave it out as the header now contains the main info.
                     ],
                   ),
                 ),
-              ),
-              
-              // Floating Action Button for favorites
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 24,
-                right: 24,
-                child: _FavoriteFloatingButton(
-                  isFavorite: isFavorite,
-                  onTap: _toggleFavorite,
+                SliverPersistentHeader(
+                  delegate: _SliverAppBarDelegate(
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: context.isDarkMode 
+                            ? context.surfaceLightColor 
+                            : context.backgroundTertiaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                          color: context.backgroundColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        labelColor: context.textPrimaryColor,
+                        unselectedLabelColor: context.textTertiaryColor,
+                        dividerColor: Colors.transparent,
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        splashFactory: NoSplash.splashFactory,
+                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        labelStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Inter',
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Inter',
+                        ),
+                        tabs: const [
+                          Tab(text: AppStrings.overview),
+                          Tab(text: AppStrings.behaviour),
+                          Tab(text: AppStrings.danger),
+                          Tab(text: AppStrings.more),
+                        ],
+                      ),
+                    ),
+                  ),
+                  pinned: true,
                 ),
-              ),
-            ],
+              ];
+            },
+            body: Stack(
+              children: [
+                TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _OverviewTab(result: result),
+                    _BehaviourTab(result: result),
+                    _DangerTab(result: result),
+                    _MoreTab(result: result),
+                  ],
+                ),
+                
+                // Floating Action Button for favorites
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 24,
+                  right: 24,
+                  child: _FavoriteFloatingButton(
+                    isFavorite: isFavorite,
+                    onTap: _toggleFavorite,
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -378,6 +414,30 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   }
 }
 
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget _tabBarWidget;
+
+  _SliverAppBarDelegate(this._tabBarWidget);
+
+  @override
+  double get minExtent => 56; // TabBar height + padding
+  @override
+  double get maxExtent => 56;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: context.backgroundColor,
+      child: _tabBarWidget,
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return false;
+  }
+}
+
 /// Floating button for adding/removing favorites with haptic feedback
 class _FavoriteFloatingButton extends StatelessWidget {
   final bool isFavorite;
@@ -415,8 +475,8 @@ class _FavoriteFloatingButton extends StatelessWidget {
           },
           child: Icon(
             isFavorite 
-                ? MingCuteIcons.mgc_heart_fill 
-                : MingCuteIcons.mgc_heart_line,
+                ? MingCuteIcons.mgc_star_fill 
+                : MingCuteIcons.mgc_star_line,
             key: ValueKey(isFavorite),
             color: AppColors.white,
             size: 28,
@@ -427,130 +487,639 @@ class _FavoriteFloatingButton extends StatelessWidget {
   }
 }
 
-/// Sticky tab bar delegate for pinned header
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final int activeIndex;
-  final Function(int) onTabTap;
+/// Snake badges section
+class _SnakeBadges extends StatelessWidget {
+  final SnakeIdentification result;
 
-  _StickyTabBarDelegate({
-    required this.activeIndex,
-    required this.onTabTap,
-  });
+  const _SnakeBadges({required this.result});
+
+  Color _getVenomColor() {
+    final level = result.basicInfo.venomLevel.toLowerCase();
+    if (level.contains('mildly')) {
+      return AppColors.warning;
+    } else if (level.contains('highly') || level.contains('deadly')) {
+      return AppColors.error;
+    } else if (level.contains('non') || level.contains('not')) {
+      return AppColors.success;
+    }
+    return AppColors.info;
+  }
+
+  Color _getDangerColor() {
+    final level = result.dangerSafety.dangerLevel.toLowerCase();
+    if (level.contains('high') || level.contains('deadly') || level.contains('extreme')) {
+      return AppColors.dangerHigh;
+    }
+    if (level.contains('medium') || level.contains('moderate')) {
+      return AppColors.dangerMedium;
+    }
+    if (level.contains('low') || level.contains('mild')) {
+      return AppColors.dangerLow;
+    }
+    return AppColors.dangerNone;
+  }
 
   @override
-  double get minExtent => 64;
-
-  @override
-  double get maxExtent => 64;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final isDark = context.isDarkMode;
-    
-    return Container(
-      color: context.backgroundColor,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: context.surfaceLightColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: context.borderColor.withValues(alpha: 0.5),
-            width: 1,
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _Badge(
+            icon: MingCuteIcons.mgc_flask_line,
+            label: result.basicInfo.venomLevel,
+            color: _getVenomColor(),
           ),
-          boxShadow: overlapsContent ? [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ] : null,
-        ),
-        child: Row(
-          children: [
-            _TabItem(
-              label: AppStrings.overview,
-              isActive: activeIndex == 0,
-              onTap: () => onTabTap(0),
-              isDark: isDark,
-            ),
-            _TabItem(
-              label: AppStrings.behaviour,
-              isActive: activeIndex == 1,
-              onTap: () => onTabTap(1),
-              isDark: isDark,
-            ),
-            _TabItem(
-              label: AppStrings.danger,
-              isActive: activeIndex == 2,
-              onTap: () => onTabTap(2),
-              isDark: isDark,
-            ),
-            _TabItem(
-              label: AppStrings.more,
-              isActive: activeIndex == 3,
-              onTap: () => onTabTap(3),
-              isDark: isDark,
-            ),
-          ],
-        ),
+          _Badge(
+            icon: MingCuteIcons.mgc_ruler_line,
+            label: result.physicalCharacteristics.formattedLengthRange,
+            color: AppColors.primary,
+          ),
+          _Badge(
+            icon: MingCuteIcons.mgc_warning_line,
+            label: result.dangerSafety.dangerLevel,
+            color: _getDangerColor(),
+          ),
+        ],
       ),
     );
   }
-
-  @override
-  bool shouldRebuild(_StickyTabBarDelegate oldDelegate) {
-    return activeIndex != oldDelegate.activeIndex;
-  }
 }
 
-/// Individual tab item
-class _TabItem extends StatelessWidget {
+/// Individual badge
+class _Badge extends StatelessWidget {
+  final IconData icon;
   final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-  final bool isDark;
+  final Color color;
 
-  const _TabItem({
+  const _Badge({
+    required this.icon,
     required this.label,
-    required this.isActive,
-    required this.onTap,
-    required this.isDark,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: isActive ? [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ] : null,
-          ),
-          child: Text(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
             label,
-            textAlign: TextAlign.center,
             style: TextStyle(
-              color: isActive 
-                  ? (isDark ? AppColors.backgroundDark : AppColors.white)
-                  : context.textTertiaryColor,
-              fontSize: 13,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-              fontFamily: 'Inter',
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Overview tab content
+class _OverviewTab extends StatelessWidget {
+  final SnakeIdentification result;
+
+  const _OverviewTab({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionTitle(AppStrings.basicInformation),
+          const SizedBox(height: 12),
+          _InfoCard(
+            items: [
+              _InfoRow(AppStrings.commonName, result.species.commonName),
+              _InfoRow(AppStrings.scientificName, result.species.scientificName),
+              _InfoRow(AppStrings.snakeType, result.species.snakeType),
+              _InfoRow(AppStrings.venomLevel, result.basicInfo.venomLevel),
+              _InfoRow(AppStrings.behavior, result.basicInfo.behavior),
+              _InfoRow(AppStrings.nativeRegions, result.basicInfo.nativeRegions.join(', ')),
+              _InfoRow(AppStrings.activePeriods, result.basicInfo.activePeriods),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _SectionTitle(AppStrings.characteristics),
+          const SizedBox(height: 12),
+          _InfoCard(
+            items: [
+              _InfoRow(AppStrings.colorDescription, result.physicalCharacteristics.colorDescription),
+              _InfoRow(AppStrings.lengthRange, result.physicalCharacteristics.formattedLengthRange),
+              _InfoRow(AppStrings.bodyPattern, result.physicalCharacteristics.bodyPattern),
+              _InfoRow(AppStrings.scaleTexture, result.physicalCharacteristics.scaleTexture),
+              _InfoRow(AppStrings.headShape, result.physicalCharacteristics.headShape),
+              _InfoRow(AppStrings.pupilShape, result.physicalCharacteristics.pupilShape),
+              _InfoRow(AppStrings.tailType, result.physicalCharacteristics.tailType),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            AppStrings.disclaimer,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textMutedColor,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Behaviour tab content
+class _BehaviourTab extends StatelessWidget {
+  final SnakeIdentification result;
+
+  const _BehaviourTab({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionTitle(AppStrings.habitatAndLifestyle),
+          const SizedBox(height: 12),
+          _InfoCard(
+            items: [
+              _InfoRow(AppStrings.habitat, result.habitatLifestyle.habitat),
+              _InfoRow(AppStrings.lifestyle, result.habitatLifestyle.lifestyle),
+              _InfoRow(AppStrings.geographicRange, result.habitatLifestyle.geographicRange),
+              _InfoRow(AppStrings.preferredEnvironment, result.habitatLifestyle.preferredEnvironment),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _SectionTitle(AppStrings.dietAndHunting),
+          const SizedBox(height: 12),
+          _InfoCard(
+            items: [
+              _InfoRow(AppStrings.huntingStrategy, result.dietInfo.huntingStrategy),
+              _InfoRow(AppStrings.dietType, result.dietInfo.dietType),
+              _InfoRow(AppStrings.feedingFrequency, result.dietInfo.feedingFrequency),
+              if (result.dietInfo.typicalPrey.isNotEmpty)
+                _InfoRow(AppStrings.typicalPrey, result.dietInfo.typicalPrey.join(', ')),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _SectionTitle(AppStrings.reproduction),
+          const SizedBox(height: 12),
+          _InfoCard(
+            items: [
+              _InfoRow(AppStrings.reproductionType, result.reproductionInfo.reproductionType),
+              _InfoRow(AppStrings.breedingSeason, result.reproductionInfo.breedingSeason),
+              _InfoRow(AppStrings.clutchSize, result.reproductionInfo.clutchSize),
+              _InfoRow(AppStrings.gestationPeriod, result.reproductionInfo.gestationPeriod),
+              _InfoRow(AppStrings.matingBehavior, result.reproductionInfo.matingBehavior),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            AppStrings.disclaimer,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textMutedColor,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Danger tab content
+class _DangerTab extends StatelessWidget {
+  final SnakeIdentification result;
+
+  const _DangerTab({required this.result});
+
+  Color _getDangerColor() {
+    final level = result.dangerSafety.dangerLevel.toLowerCase();
+    if (level.contains('high') || level.contains('deadly') || level.contains('extreme')) {
+      return AppColors.dangerHigh;
+    }
+    if (level.contains('medium') || level.contains('moderate')) {
+      return AppColors.dangerMedium;
+    }
+    if (level.contains('low') || level.contains('mild')) {
+      return AppColors.dangerLow;
+    }
+    return AppColors.dangerNone;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionTitle(AppStrings.dangerLevel),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: _getDangerColor().withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _getDangerColor().withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    MingCuteIcons.mgc_warning_fill,
+                    color: _getDangerColor(),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Danger Level',
+                        style: TextStyle(
+                          color: context.textTertiaryColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        result.dangerSafety.dangerLevel,
+                        style: TextStyle(
+                          color: _getDangerColor(),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (result.dangerSafety.biteSymptoms.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            _SectionTitle(AppStrings.biteSymptoms),
+            const SizedBox(height: 12),
+            _InfoCard(
+              items: result.dangerSafety.biteSymptoms
+                  .map((s) => _BulletItem(s))
+                  .toList(),
+            ),
+          ],
+          if (result.dangerSafety.safetyTips.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            _SectionTitle(AppStrings.safetyTips),
+            const SizedBox(height: 12),
+            _InfoCard(
+              items: result.dangerSafety.safetyTips
+                  .map((t) => _BulletItem(t))
+                  .toList(),
+            ),
+          ],
+          const SizedBox(height: 16),
+          Text(
+            AppStrings.disclaimer,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textMutedColor,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// More tab content
+class _MoreTab extends StatelessWidget {
+  final SnakeIdentification result;
+
+  const _MoreTab({required this.result});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (result.commonQuestions.isNotEmpty) ...[
+            _SectionTitle(AppStrings.commonQuestions),
+            const SizedBox(height: 12),
+            ...result.commonQuestions.map((q) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _QuestionCard(question: q),
+            )),
+          ],
+          if (result.possibleAlternatives.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _SectionTitle(AppStrings.possibleAlternatives),
+            const SizedBox(height: 12),
+            ...result.possibleAlternatives.map((alt) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _AlternativeCard(alternative: alt),
+            )),
+          ],
+          const SizedBox(height: 16),
+          Text(
+            AppStrings.disclaimer,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textMutedColor,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Section title
+class _SectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SectionTitle(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: TextStyle(
+        color: context.textPrimaryColor,
+        fontSize: 18,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.3,
+      ),
+    );
+  }
+}
+
+/// Clean info card without shadows
+class _InfoCard extends StatelessWidget {
+  final List<Widget> items;
+
+  const _InfoCard({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: items,
+      ),
+    );
+  }
+}
+
+/// Info row with label and value
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: context.textSecondaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 5,
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                color: context.textPrimaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bullet item for lists
+class _BulletItem extends StatelessWidget {
+  final String text;
+
+  const _BulletItem(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(
+              color: context.textTertiaryColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: context.textPrimaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Question card
+class _QuestionCard extends StatefulWidget {
+  final CommonQuestion question;
+
+  const _QuestionCard({required this.question});
+
+  @override
+  State<_QuestionCard> createState() => _QuestionCardState();
+}
+
+class _QuestionCardState extends State<_QuestionCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.question.question,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    _isExpanded
+                        ? MingCuteIcons.mgc_up_line
+                        : MingCuteIcons.mgc_down_line,
+                    color: context.textTertiaryColor,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isExpanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(
+                widget.question.answer,
+                style: TextStyle(
+                  color: context.textSecondaryColor,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Alternative species card
+class _AlternativeCard extends StatelessWidget {
+  final AlternativeSpecies alternative;
+
+  const _AlternativeCard({required this.alternative});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alternative.commonName,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      alternative.scientificName,
+                      style: TextStyle(
+                        color: context.textTertiaryColor,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (alternative.differentiatingFeatures.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              alternative.differentiatingFeatures,
+              style: TextStyle(
+                color: context.textSecondaryColor,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

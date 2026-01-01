@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:hive/hive.dart';
 
 import 'snake_identification.dart';
@@ -65,6 +67,7 @@ class AnalysisHistory extends HiveObject {
       dangerLevel: identification.dangerSafety.dangerLevel,
       confidence: identification.confidence,
       analyzedAt: DateTime.now(),
+      fullResultJson: jsonEncode(identification.toJson()),
     );
   }
 
@@ -106,6 +109,9 @@ class FavoriteSnake extends HiveObject {
   @HiveField(7)
   final DateTime addedAt;
 
+  @HiveField(8)
+  final String? fullResultJson;
+
   FavoriteSnake({
     required this.id,
     required this.commonName,
@@ -115,6 +121,7 @@ class FavoriteSnake extends HiveObject {
     required this.dangerLevel,
     this.imagePath,
     required this.addedAt,
+    this.fullResultJson,
   });
 
   /// Create from a SnakeIdentification result
@@ -131,6 +138,7 @@ class FavoriteSnake extends HiveObject {
       dangerLevel: identification.dangerSafety.dangerLevel,
       imagePath: imagePath,
       addedAt: DateTime.now(),
+      fullResultJson: jsonEncode(identification.toJson()),
     );
   }
 

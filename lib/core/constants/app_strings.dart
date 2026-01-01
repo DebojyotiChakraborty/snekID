@@ -46,10 +46,10 @@ class AppStrings {
   static const String mostLikelyMatch = 'Most Likely Match';
   static const String otherPossibleMatches = 'Other Possible Matches';
   static const String confidence = 'Confidence';
-  static const String addToFavorites = 'Add to Favorites';
+  static const String addToFavorites = 'Add to Starred';
   static const String removeFromFavorites = 'Remove';
-  static const String addedToFavorites = 'Added to favorites!';
-  static const String removedFromFavorites = 'Removed from favorites';
+  static const String addedToFavorites = 'Added to starred!';
+  static const String removedFromFavorites = 'Removed from starred';
   static const String savedToHistory = 'Saved to history';
 
   // Warning
@@ -142,16 +142,16 @@ class AppStrings {
   static const String differentiatingFeatures = 'How to Differentiate';
 
   // History screen
-  static const String recentAnalyses = 'Recent Analyses';
-  static const String favorites = 'Favorites';
+  static const String recentAnalyses = 'Recent';
+  static const String favorites = 'Starred';
   static const String noHistoryYet = 'No analysis history yet';
   static const String noHistoryDescription = 'Your analyzed snakes will appear here';
-  static const String noFavoritesYet = 'No favorites yet';
-  static const String noFavoritesDescription = 'Tap the heart icon to add snakes to your favorites';
+  static const String noFavoritesYet = 'No starred items yet';
+  static const String noFavoritesDescription = 'Tap the star icon to add snakes to your starred list';
   static const String clearHistory = 'Clear History';
   static const String clearHistoryConfirm = 'Are you sure you want to clear all history?';
-  static const String clearFavorites = 'Clear Favorites';
-  static const String clearFavoritesConfirm = 'Are you sure you want to clear all favorites?';
+  static const String clearFavorites = 'Clear Starred';
+  static const String clearFavoritesConfirm = 'Are you sure you want to clear all starred items?';
   static const String delete = 'Delete';
   static const String clear = 'Clear';
 

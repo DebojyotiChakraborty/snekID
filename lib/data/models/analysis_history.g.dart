@@ -86,13 +86,14 @@ class FavoriteSnakeAdapter extends TypeAdapter<FavoriteSnake> {
       dangerLevel: fields[5] as String,
       imagePath: fields[6] as String?,
       addedAt: fields[7] as DateTime,
+      fullResultJson: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, FavoriteSnake obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -108,7 +109,9 @@ class FavoriteSnakeAdapter extends TypeAdapter<FavoriteSnake> {
       ..writeByte(6)
       ..write(obj.imagePath)
       ..writeByte(7)
-      ..write(obj.addedAt);
+      ..write(obj.addedAt)
+      ..writeByte(8)
+      ..write(obj.fullResultJson);
   }
 
   @override

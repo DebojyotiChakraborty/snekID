@@ -40,6 +40,11 @@ class IdentificationNotifier
   void reset() {
     state = const AsyncValue.data(null);
   }
+
+  /// Manually set the identification result (e.g. from history)
+  void setResult(SnakeIdentification result) {
+    state = AsyncValue.data(result);
+  }
 }
 
 /// Provider to get the current identification result

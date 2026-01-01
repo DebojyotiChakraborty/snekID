@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:ming_cute_icons/ming_cute_icons.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../data/models/analysis_history.dart';
+import '../../data/models/snake_identification.dart';
 import '../../providers/history_provider.dart';
 
 /// History screen showing past analyses and favorites
@@ -129,6 +131,40 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
     );
   }
 
+  void _navigateToResult(String? jsonString, String? imagePath) {
+    if (jsonString == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Details not available for this item'),
+          backgroundColor: AppColors.textMuted,
+        ),
+      );
+      return;
+    }
+    
+    try {
+      final jsonMap = jsonDecode(jsonString);
+      final identification = SnakeIdentification.fromJson(jsonMap);
+      final imageFile = imagePath != null ? File(imagePath) : null;
+      
+      context.pushNamed(
+        'results',
+        extra: {
+          'identification': identification,
+          'imageFile': imageFile,
+        },
+      );
+    } catch (e) {
+      debugPrint('Error parsing history item: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error opening details'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(historyProvider);
@@ -179,42 +215,33 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: context.surfaceLightColor,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: context.borderColor.withValues(alpha: 0.5),
-                width: 1,
-              ),
+              color: context.isDarkMode 
+                  ? context.surfaceLightColor 
+                  : context.backgroundTertiaryColor,
+              borderRadius: BorderRadius.circular(12),
             ),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                color: context.backgroundColor,
+                borderRadius: BorderRadius.circular(8),
               ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              labelColor: context.isDarkMode 
-                  ? AppColors.backgroundDark 
-                  : AppColors.white,
+              labelColor: context.textPrimaryColor,
               unselectedLabelColor: context.textTertiaryColor,
+              dividerColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.tab,
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
               labelStyle: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
                 fontFamily: 'Inter',
               ),
               unselectedLabelStyle: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Inter',
               ),
@@ -233,7 +260,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(MingCuteIcons.mgc_heart_line, size: 18),
+                      const Icon(MingCuteIcons.mgc_star_line, size: 18),
                       const SizedBox(width: 6),
                       Text(AppStrings.favorites),
                     ],
@@ -254,6 +281,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
               HapticFeedback.mediumImpact();
               ref.read(historyProvider.notifier).deleteAnalysis(id);
             },
+            onTap: (item) => _navigateToResult(item.fullResultJson, item.imagePath),
           ),
           // Favorites tab
           _FavoritesList(
@@ -262,6 +290,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
               HapticFeedback.mediumImpact();
               ref.read(favoritesProvider.notifier).removeFavorite(id);
             },
+            onTap: (item) => _navigateToResult(item.fullResultJson, item.imagePath),
           ),
         ],
       ),
@@ -273,10 +302,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
 class _HistoryList extends StatelessWidget {
   final List<AnalysisHistory> history;
   final Function(String) onDelete;
+  final Function(AnalysisHistory) onTap;
 
   const _HistoryList({
     required this.history,
     required this.onDelete,
+    required this.onTap,
   });
 
   @override
@@ -299,6 +330,7 @@ class _HistoryList extends StatelessWidget {
           child: _HistoryCard(
             item: item,
             onDelete: () => onDelete(item.id),
+            onTap: () => onTap(item),
           ),
         );
       },
@@ -310,10 +342,12 @@ class _HistoryList extends StatelessWidget {
 class _HistoryCard extends StatelessWidget {
   final AnalysisHistory item;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const _HistoryCard({
     required this.item,
     required this.onDelete,
+    required this.onTap,
   });
 
   Color _getDangerColor() {
@@ -332,131 +366,123 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: Key(item.id),
-      direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDelete(),
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          color: AppColors.error,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(
-          MingCuteIcons.mgc_delete_2_line,
-          color: AppColors.white,
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: context.borderColor,
-            width: 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Dismissible(
+        key: Key(item.id),
+        direction: DismissDirection.endToStart,
+        onDismissed: (_) => onDelete(),
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: AppColors.error,
+            borderRadius: BorderRadius.circular(16),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          child: const Icon(
+            MingCuteIcons.mgc_delete_2_line,
+            color: AppColors.white,
+          ),
         ),
-        child: Row(
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                bottomLeft: Radius.circular(15),
-              ),
-              child: SizedBox(
-                width: 90,
-                height: 90,
-                child: _buildImage(),
-              ),
-            ),
-            // Info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.commonName,
-                      style: TextStyle(
-                        color: context.textPrimaryColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.scientificName,
-                      style: TextStyle(
-                        color: context.textTertiaryColor,
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        // Danger badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getDangerColor().withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: _getDangerColor().withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Text(
-                            item.dangerLevel,
-                            style: TextStyle(
-                              color: _getDangerColor(),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Confidence
-                        Text(
-                          item.confidencePercentage,
-                          style: TextStyle(
-                            color: context.textTertiaryColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const Spacer(),
-                        // Date
-                        Text(
-                          item.formattedDate,
-                          style: TextStyle(
-                            color: context.textMutedColor,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              // Image
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  bottomLeft: Radius.circular(15),
+                ),
+                child: SizedBox(
+                  width: 90,
+                  height: 90,
+                  child: _buildImage(),
                 ),
               ),
-            ),
-          ],
+              // Info
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.commonName,
+                        style: TextStyle(
+                          color: context.textPrimaryColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.scientificName,
+                        style: TextStyle(
+                          color: context.textTertiaryColor,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          // Danger badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getDangerColor().withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: _getDangerColor().withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              item.dangerLevel,
+                              style: TextStyle(
+                                color: _getDangerColor(),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Confidence
+                          Text(
+                            item.confidencePercentage,
+                            style: TextStyle(
+                              color: context.textTertiaryColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const Spacer(),
+                          // Date
+                          Text(
+                            item.formattedDate,
+                            style: TextStyle(
+                              color: context.textMutedColor,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -492,17 +518,19 @@ class _HistoryCard extends StatelessWidget {
 class _FavoritesList extends StatelessWidget {
   final List<FavoriteSnake> favorites;
   final Function(String) onDelete;
+  final Function(FavoriteSnake) onTap;
 
   const _FavoritesList({
     required this.favorites,
     required this.onDelete,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     if (favorites.isEmpty) {
       return _EmptyState(
-        icon: MingCuteIcons.mgc_heart_line,
+        icon: MingCuteIcons.mgc_star_line,
         title: AppStrings.noFavoritesYet,
         subtitle: AppStrings.noFavoritesDescription,
       );
@@ -518,6 +546,7 @@ class _FavoritesList extends StatelessWidget {
           child: _FavoriteCard(
             item: item,
             onDelete: () => onDelete(item.id),
+            onTap: () => onTap(item),
           ),
         );
       },
@@ -529,10 +558,12 @@ class _FavoritesList extends StatelessWidget {
 class _FavoriteCard extends StatelessWidget {
   final FavoriteSnake item;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const _FavoriteCard({
     required this.item,
     required this.onDelete,
+    required this.onTap,
   });
 
   Color _getDangerColor() {
@@ -551,44 +582,35 @@ class _FavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: Key(item.id),
-      direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDelete(),
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          color: AppColors.error,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(
-          MingCuteIcons.mgc_delete_2_line,
-          color: AppColors.white,
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.surfaceColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: context.borderColor,
-            width: 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Dismissible(
+        key: Key(item.id),
+        direction: DismissDirection.endToStart,
+        onDismissed: (_) => onDelete(),
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: AppColors.error,
+            borderRadius: BorderRadius.circular(16),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          child: const Icon(
+            MingCuteIcons.mgc_delete_2_line,
+            color: AppColors.white,
+          ),
         ),
-        child: Row(
-          children: [
-            // Heart icon with gradient background
-            Container(
-              width: 90,
-              height: 90,
+        child: Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              // Heart icon with gradient background
+              Container(
+                width: 90,
+                height: 90,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -613,7 +635,7 @@ class _FavoriteCard extends StatelessWidget {
                     )
                   : const Center(
                       child: Icon(
-                        MingCuteIcons.mgc_heart_fill,
+                        MingCuteIcons.mgc_star_fill,
                         color: AppColors.error,
                         size: 36,
                       ),
@@ -710,7 +732,7 @@ class _FavoriteCard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildImage(String path) {
@@ -730,7 +752,7 @@ class _FavoriteCard extends StatelessWidget {
       color: AppColors.surfaceDark,
       child: const Center(
         child: Icon(
-          MingCuteIcons.mgc_heart_fill,
+          MingCuteIcons.mgc_star_fill,
           color: AppColors.error,
           size: 36,
         ),

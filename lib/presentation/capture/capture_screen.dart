@@ -75,6 +75,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
       // Turn off flash when app becomes inactive
       _turnOffFlash();
       _cameraController?.dispose();
+      // Ensure we don't try to use the disposed controller
+      if (mounted) {
+        setState(() {
+          _isInitialized = false;
+        });
+      }
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
       // Reset flash state when camera is reinitialized
