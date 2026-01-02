@@ -1,8 +1,6 @@
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:ming_cute_icons/ming_cute_icons.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
@@ -22,57 +20,31 @@ class AnalysisLoading extends StatefulWidget {
 
 class _AnalysisLoadingState extends State<AnalysisLoading>
     with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _rotationController;
-  late AnimationController _progressController;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _scaleAnimation;
+  late AnimationController _scanLineController;
+  late Animation<double> _scanLineAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Pulse animation for the outer ring
-    _pulseController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+    // Scanning line animation that moves up and down
+    _scanLineController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.15,
+    _scanLineAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _pulseController,
+      parent: _scanLineController,
       curve: Curves.easeInOut,
     ));
-
-    // Rotation animation for scanning effect
-    _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    )..repeat();
-
-    // Scale animation for inner icon
-    _scaleAnimation = Tween<double>(
-      begin: 0.9,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-
-    // Progress animation (indeterminate style)
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    )..repeat();
   }
 
   @override
   void dispose() {
-    _pulseController.dispose();
-    _rotationController.dispose();
-    _progressController.dispose();
+    _scanLineController.dispose();
     super.dispose();
   }
 
@@ -85,8 +57,8 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
           children: [
             const Spacer(flex: 2),
 
-            // Animated loading indicator
-            _buildAnimatedLoader(),
+            // Image with scanning animation
+            _buildImageWithScanning(),
 
             const SizedBox(height: 48),
 
@@ -104,7 +76,8 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
             const SizedBox(height: 12),
 
             Text(
-              AppStrings.analyzingDescription,
+              'Our AI is identifying the snake species and pulling information...',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
@@ -113,11 +86,6 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
               ),
             ),
 
-            const SizedBox(height: 40),
-
-            // Animated progress dots
-            _buildProgressDots(),
-
             const Spacer(flex: 3),
           ],
         ),
@@ -125,149 +93,291 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
     );
   }
 
-  Widget _buildAnimatedLoader() {
+  Widget _buildImageWithScanning() {
+    const double imageSize = 280.0;
+    const double cornerBracketLength = 24.0;
+    const double cornerBracketWidth = 2.0;
+    const double cornerBracketGap = 8.0;
+    final double containerSize = imageSize + (cornerBracketLength * 2);
+    final double imageOffset = cornerBracketLength;
+
     return SizedBox(
-      width: 160,
-      height: 160,
+      width: containerSize,
+      height: containerSize,
       child: Stack(
-        alignment: Alignment.center,
         children: [
-          // Outer pulsing ring
-          AnimatedBuilder(
-            animation: _pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _pulseAnimation.value,
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                      width: 2,
+          // Image container
+          Positioned(
+            top: imageOffset,
+            left: imageOffset,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: imageSize,
+                height: imageSize,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Captured image
+                    if (widget.imageFile != null)
+                      Image.file(
+                        widget.imageFile!,
+                        fit: BoxFit.cover,
+                      )
+                    else
+                      Container(
+                        color: AppColors.backgroundSecondaryDark,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            color: AppColors.textSecondaryDark,
+                            size: 48,
+                          ),
+                        ),
+                      ),
+
+                    // Green gradient overlay
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.3),
+                            AppColors.primary.withValues(alpha: 0.2),
+                            AppColors.primary.withValues(alpha: 0.3),
+                          ],
+                          stops: const [0.0, 0.5, 1.0],
+                        ),
+                      ),
                     ),
-                  ),
+
+                    // Scanning line
+                    AnimatedBuilder(
+                      animation: _scanLineAnimation,
+                      builder: (context, child) {
+                        final linePosition = _scanLineAnimation.value;
+                        final lineY = linePosition * imageSize;
+
+                        return Positioned(
+                          top: lineY,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            height: 2,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.5),
+                                  blurRadius: 4,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           ),
 
-          // Rotating scan arc
-          AnimatedBuilder(
-            animation: _rotationController,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: _rotationController.value * 2 * math.pi,
-                child: CustomPaint(
-                  size: const Size(120, 120),
-                  painter: ScanArcPainter(
-                    color: AppColors.primary,
-                    strokeWidth: 3,
-                  ),
-                ),
-              );
-            },
+          // Corner brackets (white dashed L-shapes) - positioned at image corners
+          // Top-left corner
+          Positioned(
+            top: imageOffset - cornerBracketGap,
+            left: imageOffset - cornerBracketGap,
+            child: CustomPaint(
+              size: Size(cornerBracketLength, cornerBracketLength),
+              painter: CornerBracketPainter(
+                color: AppColors.white,
+                strokeWidth: cornerBracketWidth,
+                corner: Corner.topLeft,
+                gap: cornerBracketGap,
+              ),
+            ),
           ),
-
-          // Inner circle with icon
-          AnimatedBuilder(
-            animation: _scaleAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    border: Border.all(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
-                  ),
-                  child: const Icon(
-                    MingCuteIcons.mgc_search_ai_line,
-                    size: 36,
-                    color: AppColors.primary,
-                  ),
-                ),
-              );
-            },
+          // Top-right corner
+          Positioned(
+            top: imageOffset - cornerBracketGap,
+            right: imageOffset - cornerBracketGap,
+            child: CustomPaint(
+              size: Size(cornerBracketLength, cornerBracketLength),
+              painter: CornerBracketPainter(
+                color: AppColors.white,
+                strokeWidth: cornerBracketWidth,
+                corner: Corner.topRight,
+                gap: cornerBracketGap,
+              ),
+            ),
+          ),
+          // Bottom-left corner
+          Positioned(
+            bottom: imageOffset - cornerBracketGap,
+            left: imageOffset - cornerBracketGap,
+            child: CustomPaint(
+              size: Size(cornerBracketLength, cornerBracketLength),
+              painter: CornerBracketPainter(
+                color: AppColors.white,
+                strokeWidth: cornerBracketWidth,
+                corner: Corner.bottomLeft,
+                gap: cornerBracketGap,
+              ),
+            ),
+          ),
+          // Bottom-right corner
+          Positioned(
+            bottom: imageOffset - cornerBracketGap,
+            right: imageOffset - cornerBracketGap,
+            child: CustomPaint(
+              size: Size(cornerBracketLength, cornerBracketLength),
+              painter: CornerBracketPainter(
+                color: AppColors.white,
+                strokeWidth: cornerBracketWidth,
+                corner: Corner.bottomRight,
+                gap: cornerBracketGap,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildProgressDots() {
-    return AnimatedBuilder(
-      animation: _progressController,
-      builder: (context, child) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(3, (index) {
-            final delay = index * 0.2;
-            final progress = (_progressController.value - delay) % 1.0;
-            final opacity = (math.sin(progress * math.pi)).clamp(0.3, 1.0);
-
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withValues(alpha: opacity),
-              ),
-            );
-          }),
-        );
-      },
-    );
-  }
 }
 
-/// Custom painter for scanning arc effect
-class ScanArcPainter extends CustomPainter {
+/// Custom painter for corner brackets (L-shapes)
+enum Corner { topLeft, topRight, bottomLeft, bottomRight }
+
+class CornerBracketPainter extends CustomPainter {
   final Color color;
   final double strokeWidth;
+  final Corner corner;
+  final double gap;
 
-  ScanArcPainter({
+  CornerBracketPainter({
     required this.color,
-    this.strokeWidth = 3,
+    required this.strokeWidth,
+    required this.corner,
+    required this.gap,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromCircle(
-      center: Offset(size.width / 2, size.height / 2),
-      radius: size.width / 2,
-    );
-
-    // Create gradient for arc
-    final gradient = SweepGradient(
-      startAngle: 0,
-      endAngle: math.pi * 0.5,
-      colors: [
-        color.withValues(alpha: 0.0),
-        color,
-      ],
-    );
-
     final paint = Paint()
-      ..shader = gradient.createShader(rect)
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    canvas.drawArc(
-      rect,
-      0,
-      math.pi * 0.5,
-      false,
-      paint,
-    );
+    // Dashed pattern
+    paint.strokeWidth = strokeWidth;
+    final dashWidth = 4.0;
+    final dashSpace = 2.0;
+
+    switch (corner) {
+      case Corner.topLeft:
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(gap, gap),
+          Offset(gap, size.height),
+          dashWidth,
+          dashSpace,
+        );
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(gap, gap),
+          Offset(size.width, gap),
+          dashWidth,
+          dashSpace,
+        );
+        break;
+      case Corner.topRight:
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(size.width - gap, gap),
+          Offset(size.width - gap, size.height),
+          dashWidth,
+          dashSpace,
+        );
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(size.width - gap, gap),
+          Offset(0, gap),
+          dashWidth,
+          dashSpace,
+        );
+        break;
+      case Corner.bottomLeft:
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(gap, size.height - gap),
+          Offset(gap, 0),
+          dashWidth,
+          dashSpace,
+        );
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(gap, size.height - gap),
+          Offset(size.width, size.height - gap),
+          dashWidth,
+          dashSpace,
+        );
+        break;
+      case Corner.bottomRight:
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(size.width - gap, size.height - gap),
+          Offset(size.width - gap, 0),
+          dashWidth,
+          dashSpace,
+        );
+        _drawDashedLine(
+          canvas,
+          paint,
+          Offset(size.width - gap, size.height - gap),
+          Offset(0, size.height - gap),
+          dashWidth,
+          dashSpace,
+        );
+        break;
+    }
+  }
+
+  void _drawDashedLine(
+    Canvas canvas,
+    Paint paint,
+    Offset start,
+    Offset end,
+    double dashWidth,
+    double dashSpace,
+  ) {
+    final path = Path();
+    path.moveTo(start.dx, start.dy);
+
+    final distance = (end - start).distance;
+    final direction = (end - start) / distance;
+    double currentDistance = 0;
+
+    while (currentDistance < distance) {
+      final dashEnd = start + direction * (currentDistance + dashWidth).clamp(0.0, distance);
+      path.lineTo(dashEnd.dx, dashEnd.dy);
+      currentDistance += dashWidth + dashSpace;
+      if (currentDistance < distance) {
+        path.moveTo((start + direction * currentDistance).dx, (start + direction * currentDistance).dy);
+      }
+    }
+
+    canvas.drawPath(path, paint);
   }
 
   @override
