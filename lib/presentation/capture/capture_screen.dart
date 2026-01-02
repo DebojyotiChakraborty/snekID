@@ -197,11 +197,19 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     });
   }
 
-  void _onRetake() {
+  void _onRetake() async {
     setState(() {
-      _capturedImage = null;
       _showConfirmation = false;
     });
+    
+    // Wait for animation to slide down
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    if (mounted) {
+      setState(() {
+        _capturedImage = null;
+      });
+    }
   }
 
   void _onIdentify() async {
@@ -216,14 +224,19 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
       
       ref.read(selectedImageProvider.notifier).state = _capturedImage;
       if (mounted) {
-        context.push(AppRoutes.results);
+        await context.pushNamed(
+          'analysis',
+          extra: {'imageFile': _capturedImage},
+        );
+        
+        // Reset state after returning regardless of result
+        if (mounted) {
+          setState(() {
+            _capturedImage = null;
+            _showConfirmation = false;
+          });
+        }
       }
-
-      // Reset state after navigation
-      setState(() {
-        _capturedImage = null;
-        _showConfirmation = false;
-      });
     }
   }
 
@@ -291,14 +304,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
       body: Stack(
         children: [
           // Camera preview or captured image or error state
-          if (_showConfirmation && _capturedImage != null)
-            _buildCapturedImagePreview()
-          else if (_errorMessage != null)
+          if (_errorMessage != null)
             _buildErrorState()
           else if (_isInitialized && _cameraController != null)
             _buildCameraPreview()
           else
             _buildLoadingState(),
+            
+          // Captured Image Preview (Stacked on top)
+          if (_capturedImage != null)
+            _buildCapturedImagePreview(),
 
           // Frame overlay (show on camera preview or captured image)
           if (_isInitialized || _showConfirmation)
@@ -350,19 +365,20 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
               ),
             ),
 
-          // Confirmation dialog
-          if (_showConfirmation)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                child: CaptureConfirmationDialog(
-                  onRetake: _onRetake,
-                  onIdentify: _onIdentify,
-                ),
+          // Confirmation dialog (Animated)
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            bottom: _showConfirmation ? 0 : -200,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: CaptureConfirmationDialog(
+                onRetake: _onRetake,
+                onIdentify: _onIdentify,
               ),
             ),
+          ),
         ],
       ),
     );
@@ -370,9 +386,22 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
 
   Widget _buildCapturedImagePreview() {
     return SizedBox.expand(
-      child: Image.file(
-        _capturedImage!,
-        fit: BoxFit.cover,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Hero(
+            tag: 'snake_image',
+            child: Image.file(
+              _capturedImage!,
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Gradient overlay for better text visibility if needed, or simply style
+          if (_showConfirmation)
+            Container(
+              color: Colors.black12,
+            ),
+        ],
       ),
     );
   }

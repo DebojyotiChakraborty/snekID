@@ -1,27 +1,35 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:ming_cute_icons/ming_cute_icons.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_strings.dart';
+import '../../core/router/app_router.dart';
+import '../../providers/capture_provider.dart';
+import '../../providers/identification_provider.dart';
+import '../../data/services/image_service.dart';
 
-/// Loading state while analyzing the image with animated snake
-class AnalysisLoading extends StatefulWidget {
+class AnalysisScreen extends ConsumerStatefulWidget {
   final File? imageFile;
 
-  const AnalysisLoading({
+  const AnalysisScreen({
     super.key,
     this.imageFile,
   });
 
   @override
-  State<AnalysisLoading> createState() => _AnalysisLoadingState();
+  ConsumerState<AnalysisScreen> createState() => _AnalysisScreenState();
 }
 
-class _AnalysisLoadingState extends State<AnalysisLoading>
+class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
     with TickerProviderStateMixin {
   late AnimationController _scanLineController;
   late Animation<double> _scanLineAnimation;
+  final ImageService _imageService = ImageService();
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -40,6 +48,23 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
       parent: _scanLineController,
       curve: Curves.easeInOut,
     ));
+    
+    // Start identification
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startIdentification();
+    });
+  }
+
+  void _startIdentification() {
+    final image = widget.imageFile ?? ref.read(selectedImageProvider);
+    if (image != null) {
+      // Ensure provider has the image
+      ref.read(selectedImageProvider.notifier).state = image;
+      ref.read(identificationProvider.notifier).identifySnake(image);
+    } else {
+      // Fallback if no image
+      context.go(AppRoutes.capture);
+    }
   }
 
   @override
@@ -48,11 +73,50 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
     super.dispose();
   }
 
+  void _handleResult() async {
+    if (_hasNavigated) return;
+
+    final state = ref.read(identificationProvider);
+    
+    if (state.hasValue && state.value != null) {
+      _hasNavigated = true;
+      
+      // Navigate to results with a small delay to let animation play a bit
+      // and ensure the Hero transition looks good
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      if (mounted) {
+        context.pushReplacement(
+          AppRoutes.results,
+          extra: {
+            'identification': state.value,
+            'imageFile': widget.imageFile ?? ref.read(selectedImageProvider),
+            'isNewAnalysis': true,
+          },
+        );
+      }
+    } else if (state.hasError) {
+       // Handle error state locally or navigate to error screen
+       // For now stay here and show error
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: context.backgroundColor,
-      child: SafeArea(
+    // Listen to identification changes
+    ref.listen(identificationProvider, (previous, next) {
+      if (next.hasValue && next.value != null) {
+        _handleResult();
+      }
+    });
+
+    final error = ref.watch(identificationProvider).error;
+
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      body: error != null 
+          ? _buildErrorState(error.toString())
+          : SafeArea(
         child: Column(
           children: [
             const Spacer(flex: 2),
@@ -100,6 +164,8 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
     const double cornerBracketGap = 8.0;
     final double containerSize = imageSize + (cornerBracketLength * 2);
     final double imageOffset = cornerBracketLength;
+    
+    final image = widget.imageFile ?? ref.read(selectedImageProvider);
 
     return SizedBox(
       width: containerSize,
@@ -110,88 +176,106 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
           Positioned(
             top: imageOffset,
             left: imageOffset,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: SizedBox(
-                width: imageSize,
-                height: imageSize,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Captured image
-                    if (widget.imageFile != null)
-                      Image.file(
-                        widget.imageFile!,
-                        fit: BoxFit.cover,
-                      )
-                    else
-                      Container(
-                        color: AppColors.backgroundSecondaryDark,
-                        child: const Center(
-                          child: Icon(
-                            Icons.image_outlined,
-                            color: AppColors.textSecondaryDark,
-                            size: 48,
-                          ),
-                        ),
-                      ),
-
-                    // Green gradient overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.3),
-                            AppColors.primary.withValues(alpha: 0.2),
-                            AppColors.primary.withValues(alpha: 0.3),
-                          ],
-                          stops: const [0.0, 0.5, 1.0],
-                        ),
-                      ),
-                    ),
-
-                    // Scanning line
-                    AnimatedBuilder(
-                      animation: _scanLineAnimation,
-                      builder: (context, child) {
-                        final linePosition = _scanLineAnimation.value;
-                        final lineY = linePosition * imageSize;
-
-                        return Positioned(
-                          top: lineY,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 2,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.5),
-                                  blurRadius: 4,
-                                  spreadRadius: 1,
-                                ),
-                              ],
+            child: Hero(
+              tag: 'snake_image',
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: imageSize,
+                  height: imageSize,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Captured image
+                      if (image != null)
+                        Image.file(
+                          image,
+                          fit: BoxFit.cover,
+                        )
+                      else
+                        Container(
+                          color: AppColors.backgroundSecondaryDark,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_outlined,
+                              color: AppColors.textSecondaryDark,
+                              size: 48,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ],
+                        ),
+
+                      // Green gradient overlay
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppColors.primary.withValues(alpha: 0.3),
+                              AppColors.primary.withValues(alpha: 0.2),
+                              AppColors.primary.withValues(alpha: 0.3),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                      
+                      // Scanning line (Moved inside Hero to clip correctly, but typically overlays shouldn't be in Hero if they don't exist on destination)
+                      // Ideally, only the Image is the Hero. 
+                      // But for the "Box" effect, we will Hero the whole clipped box.
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+          
+          // Scanning Line (Outside Hero to avoid flying with it if we don't want it to)
+          // Actually, if we want the scanning line to disappear during transition, this is fine.
+          Positioned(
+            top: imageOffset,
+            left: imageOffset,
+            width: imageSize,
+            height: imageSize,
+            child: AnimatedBuilder(
+              animation: _scanLineAnimation,
+              builder: (context, child) {
+                final linePosition = _scanLineAnimation.value;
+                final lineY = linePosition * imageSize;
 
-          // Corner brackets (white dashed L-shapes) - positioned at image corners
+                return Stack(
+                  children: [
+                     Positioned(
+                        top: lineY,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.5),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+
+          // Corner brackets
           // Top-left corner
           Positioned(
             top: imageOffset - cornerBracketGap,
             left: imageOffset - cornerBracketGap,
             child: CustomPaint(
-              size: Size(cornerBracketLength, cornerBracketLength),
+              size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
                 color: AppColors.white,
                 strokeWidth: cornerBracketWidth,
@@ -205,7 +289,7 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
             top: imageOffset - cornerBracketGap,
             right: imageOffset - cornerBracketGap,
             child: CustomPaint(
-              size: Size(cornerBracketLength, cornerBracketLength),
+              size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
                 color: AppColors.white,
                 strokeWidth: cornerBracketWidth,
@@ -219,7 +303,7 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
             bottom: imageOffset - cornerBracketGap,
             left: imageOffset - cornerBracketGap,
             child: CustomPaint(
-              size: Size(cornerBracketLength, cornerBracketLength),
+              size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
                 color: AppColors.white,
                 strokeWidth: cornerBracketWidth,
@@ -233,7 +317,7 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
             bottom: imageOffset - cornerBracketGap,
             right: imageOffset - cornerBracketGap,
             child: CustomPaint(
-              size: Size(cornerBracketLength, cornerBracketLength),
+              size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
                 color: AppColors.white,
                 strokeWidth: cornerBracketWidth,
@@ -243,6 +327,36 @@ class _AnalysisLoadingState extends State<AnalysisLoading>
             ),
           ),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildErrorState(String message) {
+     return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(MingCuteIcons.mgc_warning_line, size: 64, color: AppColors.error),
+            const SizedBox(height: 16),
+            const Text(
+              AppStrings.errorAnalysis,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () {
+                ref.read(identificationProvider.notifier).reset();
+                context.go(AppRoutes.capture);
+              },
+              child: const Text('Try Again'),
+            ),
+          ],
+        ),
       ),
     );
   }

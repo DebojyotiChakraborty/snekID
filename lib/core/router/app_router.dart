@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../presentation/onboarding/onboarding_screen.dart';
 import '../../presentation/capture/capture_screen.dart';
 import '../../presentation/results/results_screen.dart';
+import '../../presentation/results/analysis_screen.dart';
 import '../../presentation/settings/settings_screen.dart';
 import '../../presentation/history/history_screen.dart';
 import '../../providers/onboarding_provider.dart';
@@ -15,6 +16,7 @@ class AppRoutes {
 
   static const String onboarding = '/onboarding';
   static const String capture = '/capture';
+  static const String analysis = '/analysis';
   static const String results = '/results';
   static const String settings = '/settings';
   static const String history = '/history';
@@ -53,6 +55,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: AppRoutes.analysis,
+        name: 'analysis',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: AnalysisScreen(
+              imageFile: extra?['imageFile'],
+            ),
+            // Fade transition allows Hero to fly visually
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.results,
         name: 'results',
         pageBuilder: (context, state) {
@@ -62,18 +81,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             child: ResultsScreen(
               identification: extra?['identification'],
               imageFile: extra?['imageFile'],
+              isNewAnalysis: extra?['isNewAnalysis'] ?? false,
             ),
+            // Fade transition allows Hero to fly visually from Analysis to Results Header
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 1),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
-                child: child,
-              );
+              return FadeTransition(opacity: animation, child: child);
             },
           );
         },

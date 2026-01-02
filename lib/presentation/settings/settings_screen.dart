@@ -10,95 +10,104 @@ import '../../core/router/app_router.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/theme_provider.dart';
 
-/// Settings screen with theme options and other settings
+/// Settings screen with iOS-style design
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    
     return Scaffold(
+      backgroundColor: context.backgroundColor,
       appBar: AppBar(
-        title: const Text(AppStrings.settings),
+        title: Text(
+          AppStrings.settings,
+          style: TextStyle(
+            color: context.textPrimaryColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: context.backgroundColor,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(MingCuteIcons.mgc_arrow_left_line),
+          icon: Icon(MingCuteIcons.mgc_arrow_left_line, color: context.textPrimaryColor),
           onPressed: () => context.pop(),
         ),
       ),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          const SizedBox(height: 16),
-
           // Appearance Section
-          _SectionHeader(
-            title: AppStrings.appearance,
-            isDark: isDark,
-          ),
-          _SettingsTile(
-            icon: MingCuteIcons.mgc_palette_line,
-            title: AppStrings.theme,
-            subtitle: themeMode.displayName,
-            isDark: isDark,
-            onTap: () => _showThemeDialog(context, ref, themeMode),
+          _SettingsGroup(
+            title: AppStrings.appearance.toUpperCase(),
+            children: [
+              _SettingsTile(
+                icon: MingCuteIcons.mgc_palette_line,
+                title: AppStrings.theme,
+                value: themeMode.displayName,
+                onTap: () => _showThemeDialog(context, ref, themeMode),
+                isFirst: true,
+                isLast: true,
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),
 
           // General Section
-          _SectionHeader(
-            title: AppStrings.general,
-            isDark: isDark,
-          ),
-          _SettingsTile(
-            icon: MingCuteIcons.mgc_presentation_2_line,
-            title: AppStrings.viewOnboarding,
-            subtitle: AppStrings.viewOnboardingDescription,
-            isDark: isDark,
-            onTap: () => _viewOnboarding(context, ref),
+          _SettingsGroup(
+            title: AppStrings.general.toUpperCase(),
+            children: [
+              _SettingsTile(
+                icon: MingCuteIcons.mgc_presentation_2_line,
+                title: AppStrings.viewOnboarding,
+                onTap: () => _viewOnboarding(context, ref),
+                isFirst: true,
+                isLast: true,
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),
 
           // About Section
-          _SectionHeader(
-            title: AppStrings.about,
-            isDark: isDark,
-          ),
-          _SettingsTile(
-            icon: MingCuteIcons.mgc_information_line,
-            title: AppStrings.appName,
-            subtitle: AppStrings.appDescription,
-            isDark: isDark,
-            trailing: Text(
-              'v1.0.0',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14,
-                color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+          _SettingsGroup(
+            title: AppStrings.about.toUpperCase(),
+            children: [
+              _SettingsTile(
+                icon: MingCuteIcons.mgc_information_line,
+                title: AppStrings.appName,
+                value: 'v1.0.0',
+                isFirst: true,
+                isLast: true,
               ),
-            ),
+            ],
           ),
-
-          const SizedBox(height: 32),
         ],
       ),
     );
   }
 
   void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(AppStrings.theme),
+        backgroundColor: context.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          AppStrings.theme,
+          style: TextStyle(color: context.textPrimaryColor),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppThemeMode.values.map((mode) {
             return RadioListTile<AppThemeMode>(
-              title: Text(mode.displayName),
+              title: Text(
+                mode.displayName,
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               value: mode,
               groupValue: currentMode,
               activeColor: AppColors.primary,
@@ -117,9 +126,7 @@ class SettingsScreen extends ConsumerWidget {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               AppStrings.cancel,
-              style: TextStyle(
-                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-              ),
+              style: TextStyle(color: context.textSecondaryColor),
             ),
           ),
         ],
@@ -129,7 +136,6 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _viewOnboarding(BuildContext context, WidgetRef ref) async {
     HapticFeedback.lightImpact();
-    // Ensure onboarding opens with indicator/page at index 0.
     ref.read(onboardingPageProvider.notifier).state = 0;
     await ref.read(onboardingControllerProvider.notifier).resetOnboarding();
     if (context.mounted) {
@@ -138,29 +144,42 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+class _SettingsGroup extends StatelessWidget {
   final String title;
-  final bool isDark;
+  final List<Widget> children;
 
-  const _SectionHeader({
+  const _SettingsGroup({
     required this.title,
-    required this.isDark,
+    required this.children,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: AppColors.primary,
-          letterSpacing: 1.0,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 12, bottom: 8),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: context.textSecondaryColor,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
-      ),
+        Container(
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: children,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -168,59 +187,84 @@ class _SectionHeader extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
-  final bool isDark;
+  final String? value;
   final VoidCallback? onTap;
-  final Widget? trailing;
+  final bool isFirst;
+  final bool isLast;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
-    required this.subtitle,
-    required this.isDark,
+    this.value,
     this.onTap,
-    this.trailing,
+    this.isFirst = false,
+    this.isLast = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.vertical(
+          top: isFirst ? const Radius.circular(10) : Radius.zero,
+          bottom: isLast ? const Radius.circular(10) : Radius.zero,
         ),
-        child: Icon(
-          icon,
-          color: AppColors.primary,
-          size: 22,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  icon,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // Title
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+              ),
+              
+              // Value
+              if (value != null) ...[
+                Text(
+                  value!,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: context.textTertiaryColor,
+                  ),
+                ),
+                const SizedBox(width: 6),
+              ],
+              
+              // Chevron
+              Icon(
+                MingCuteIcons.mgc_right_line,
+                color: context.textTertiaryColor.withOpacity(0.5),
+                size: 16,
+              ),
+            ],
+          ),
         ),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 14,
-          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-        ),
-      ),
-      trailing: trailing ?? Icon(
-        MingCuteIcons.mgc_right_line,
-        color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
-        size: 20,
-      ),
-      onTap: onTap,
     );
   }
 }

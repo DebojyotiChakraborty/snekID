@@ -31,11 +31,11 @@ class AppColors {
   static const Color onboardingIndicatorInactive = Color(0xFF3A3A3A);
 
   // ============ DARK THEME COLORS ============
-  static const Color backgroundDark = Color(0xFF0D1117);
-  static const Color backgroundSecondaryDark = Color(0xFF161B22);
+  static const Color backgroundDark = Color(0xFF020202);
+  static const Color backgroundSecondaryDark = Color(0xFF161B22); // Can keep or update if needed, but primary bg is requested
   static const Color backgroundTertiaryDark = Color(0xFF21262D);
-  static const Color surfaceDark = Color(0xFF1C2128);
-  static const Color surfaceLightDark = Color(0xFF2D333B);
+  static const Color surfaceDark = Color(0xFF404040); // Cards
+  static const Color surfaceLightDark = Color(0xFF404040); // Updating to match "Cards" if used interchangeably
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
   static const Color textSecondaryDark = Color(0xFFB1BAC4);
   static const Color textTertiaryDark = Color(0xFF8B949E);
@@ -44,11 +44,11 @@ class AppColors {
   static const Color borderLightDark = Color(0xFF21262D);
 
   // ============ LIGHT THEME COLORS ============
-  static const Color backgroundLight = Color(0xFFF6F8FA);
-  static const Color backgroundSecondaryLight = Color(0xFFFFFFFF);
+  static const Color backgroundLight = Color(0xFFFFFFFF);
+  static const Color backgroundSecondaryLight = Color(0xFFF6F8FA);
   static const Color backgroundTertiaryLight = Color(0xFFE8EAED);
-  static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceLightLight = Color(0xFFF3F4F6);
+  static const Color surfaceLight = Color(0xFFECECEC); // Cards
+  static const Color surfaceLightLight = Color(0xFFECECEC); // Updating to match "Cards"
   static const Color textPrimaryLight = Color(0xFF1F2328);
   static const Color textSecondaryLight = Color(0xFF57606A);
   static const Color textTertiaryLight = Color(0xFF6E7781);

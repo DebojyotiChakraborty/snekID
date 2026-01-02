@@ -13,17 +13,20 @@ import '../../providers/history_provider.dart';
 import '../../providers/identification_provider.dart';
 import '../../data/services/image_service.dart';
 import '../../data/models/snake_identification.dart';
-import 'widgets/analysis_loading.dart';
+// import 'widgets/analysis_loading.dart';
+import '../common/widgets/custom_tab_bar.dart';
 import 'widgets/warning_banner.dart';
 
 /// Results screen showing snake identification
 class ResultsScreen extends ConsumerStatefulWidget {
   final SnakeIdentification? identification;
+  final bool isNewAnalysis;
   final File? imageFile;
 
   const ResultsScreen({
     super.key,
     this.identification,
+    this.isNewAnalysis = false,
     this.imageFile,
   });
 
@@ -46,7 +49,9 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
     
     // Check if we have pre-loaded data
     if (widget.identification != null) {
-      _hasSavedToHistory = true; // Already saved/historic
+      if (!widget.isNewAnalysis) {
+        _hasSavedToHistory = true; // Already saved/historic if NOT new
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.imageFile != null) {
           ref.read(selectedImageProvider.notifier).state = widget.imageFile;
@@ -152,11 +157,11 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
     return Scaffold(
       backgroundColor: context.backgroundColor,
       body: identificationState.when(
-        loading: () => AnalysisLoading(imageFile: selectedImage),
+        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
         error: (error, _) => _buildErrorState(error.toString()),
         data: (result) {
           if (result == null) {
-            return AnalysisLoading(imageFile: selectedImage);
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
 
           // Auto-save to history when result is available
@@ -208,9 +213,12 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                       children: [
                         // Image
                         selectedImage != null
-                            ? Image.file(
-                                selectedImage,
-                                fit: BoxFit.cover,
+                            ? Hero(
+                                tag: 'snake_image',
+                                child: Image.file(
+                                  selectedImage,
+                                  fit: BoxFit.cover,
+                                ),
                               )
                             : Container(
                                 color: context.surfaceLightColor,
@@ -229,12 +237,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
+                                  // Top scrim for status bar/buttons
+                                  Colors.black.withOpacity(0.4),
                                   Colors.transparent,
-                                  Colors.transparent,
-                                  Colors.black.withOpacity(0.2),
-                                  Colors.black.withOpacity(0.8),
+                                  // Bottom fade to background
+                                  context.backgroundColor.withOpacity(0.0),
+                                  context.backgroundColor,
                                 ],
-                                stops: const [0.0, 0.5, 0.7, 1.0],
+                                stops: const [0.0, 0.2, 0.6, 1.0],
                               ),
                             ),
                           ),
@@ -250,8 +260,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                             children: [
                               Text(
                                 result.species.commonName,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: context.textPrimaryColor,
                                   fontSize: 28,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.5,
@@ -262,7 +272,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                               Text(
                                 result.species.scientificName,
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: context.textSecondaryColor,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   fontStyle: FontStyle.italic,
@@ -300,44 +310,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                 ),
                 SliverPersistentHeader(
                   delegate: _SliverAppBarDelegate(
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: context.isDarkMode 
-                            ? context.surfaceLightColor 
-                            : context.backgroundTertiaryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          color: context.backgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        labelColor: context.textPrimaryColor,
-                        unselectedLabelColor: context.textTertiaryColor,
-                        dividerColor: Colors.transparent,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        splashFactory: NoSplash.splashFactory,
-                        overlayColor: WidgetStateProperty.all(Colors.transparent),
-                        labelStyle: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Inter',
-                        ),
-                        unselectedLabelStyle: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'Inter',
-                        ),
-                        tabs: const [
-                          Tab(text: AppStrings.overview),
-                          Tab(text: AppStrings.behaviour),
-                          Tab(text: AppStrings.danger),
-                          Tab(text: AppStrings.more),
-                        ],
-                      ),
+                    CustomTabBar(
+                      controller: _tabController,
+                      tabs: const [
+                        AppStrings.overview,
+                        AppStrings.behaviour,
+                        AppStrings.danger,
+                        AppStrings.more,
+                      ],
                     ),
                   ),
                   pinned: true,
