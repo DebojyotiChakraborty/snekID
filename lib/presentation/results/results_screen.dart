@@ -15,6 +15,7 @@ import '../../data/services/image_service.dart';
 import '../../data/models/snake_identification.dart';
 // import 'widgets/analysis_loading.dart';
 import '../common/widgets/custom_tab_bar.dart';
+import '../common/widgets/drops.dart';
 import 'widgets/warning_banner.dart';
 
 /// Results screen showing snake identification
@@ -38,7 +39,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
     with SingleTickerProviderStateMixin {
   final ImageService _imageService = ImageService();
   late TabController _tabController;
-  
+
   // Flag to track if history has been saved
   bool _hasSavedToHistory = false;
 
@@ -46,7 +47,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    
+
     // Check if we have pre-loaded data
     if (widget.identification != null) {
       if (!widget.isNewAnalysis) {
@@ -56,7 +57,9 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
         if (widget.imageFile != null) {
           ref.read(selectedImageProvider.notifier).state = widget.imageFile;
         }
-        ref.read(identificationProvider.notifier).setResult(widget.identification!);
+        ref
+            .read(identificationProvider.notifier)
+            .setResult(widget.identification!);
       });
     } else {
       // Trigger identification when screen loads
@@ -92,21 +95,20 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
   /// Automatically save to history when identification is complete
   Future<void> _autoSaveToHistory() async {
     if (_hasSavedToHistory) return;
-    
+
     final image = ref.read(selectedImageProvider);
     final result = ref.read(identificationProvider).valueOrNull;
-    
+
     if (image != null && result != null) {
       try {
         // Save image for history
         final savedPath = await _imageService.saveImageForHistory(image);
-        
+
         // Add to history
-        await ref.read(historyProvider.notifier).addAnalysis(
-          imagePath: savedPath,
-          identification: result,
-        );
-        
+        await ref
+            .read(historyProvider.notifier)
+            .addAnalysis(imagePath: savedPath, identification: result);
+
         _hasSavedToHistory = true;
       } catch (e) {
         // Silently fail - don't interrupt user experience
@@ -118,32 +120,36 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
   void _toggleFavorite() {
     final image = ref.read(selectedImageProvider);
     final result = ref.read(identificationProvider).valueOrNull;
-    
+
     if (result != null) {
       // Trigger haptic feedback
       HapticFeedback.mediumImpact();
-      
-      ref.read(favoritesProvider.notifier).toggleFavorite(
-        identification: result,
-        imagePath: image?.path,
-      );
-      
+
+      ref
+          .read(favoritesProvider.notifier)
+          .toggleFavorite(identification: result, imagePath: image?.path);
+
       final isFavorite = ref.read(
         isFavoriteProvider(result.species.commonName),
       );
-      
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isFavorite ? AppStrings.removedFromFavorites : AppStrings.addedToFavorites,
-          ),
-          backgroundColor: isFavorite ? AppColors.textMuted : AppColors.success,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+
+      Drops.show(
+        context,
+        title:
+            isFavorite
+                ? AppStrings.removedFromFavorites
+                : AppStrings.addedToFavorites,
+        backgroundColor: isFavorite ? AppColors.textMuted : AppColors.success,
+        position: DropPosition.bottom,
+        icon:
+            isFavorite
+                ? MingCuteIcons.mgc_star_line
+                : MingCuteIcons.mgc_star_fill,
+        iconColor: AppColors.white,
+        titleTextStyle: const TextStyle(
+          color: AppColors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
         ),
       );
     }
@@ -157,11 +163,20 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
     return Scaffold(
       backgroundColor: context.backgroundColor,
       body: identificationState.when(
-        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        loading:
+            () => const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.infoAccentGreen,
+                ),
+              ),
+            ),
         error: (error, _) => _buildErrorState(error.toString()),
         data: (result) {
           if (result == null) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           }
 
           // Auto-save to history when result is available
@@ -188,7 +203,10 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                         color: Colors.black.withOpacity(0.4),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(MingCuteIcons.mgc_left_line, color: Colors.white),
+                      child: const Icon(
+                        MingCuteIcons.mgc_left_line,
+                        color: Colors.white,
+                      ),
                     ),
                     onPressed: _onClose,
                   ),
@@ -200,7 +218,10 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                           color: Colors.black.withOpacity(0.4),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(MingCuteIcons.mgc_more_2_fill, color: Colors.white),
+                        child: const Icon(
+                          MingCuteIcons.mgc_more_2_fill,
+                          color: Colors.white,
+                        ),
                       ),
                       onPressed: () {
                         // TODO: Show menu
@@ -214,21 +235,21 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                         // Image
                         selectedImage != null
                             ? Hero(
-                                tag: 'snake_image',
-                                child: Image.file(
-                                  selectedImage,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : Container(
-                                color: context.surfaceLightColor,
-                                child: Icon(
-                                  MingCuteIcons.mgc_pic_line,
-                                  size: 64,
-                                  color: context.textMutedColor,
-                                ),
+                              tag: 'snake_image',
+                              child: Image.file(
+                                selectedImage,
+                                fit: BoxFit.cover,
                               ),
-                        
+                            )
+                            : Container(
+                              color: context.surfaceLightColor,
+                              child: Icon(
+                                MingCuteIcons.mgc_pic_line,
+                                size: 64,
+                                color: context.textMutedColor,
+                              ),
+                            ),
+
                         // Gradient Overlay
                         Positioned.fill(
                           child: DecoratedBox(
@@ -335,7 +356,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                     _MoreTab(result: result),
                   ],
                 ),
-                
+
                 // Floating Action Button for favorites
                 Positioned(
                   bottom: MediaQuery.of(context).padding.bottom + 24,
@@ -383,10 +404,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
               child: const Text(AppStrings.tryAgain),
             ),
             const SizedBox(height: 12),
-            TextButton(
-              onPressed: _onClose,
-              child: const Text('Go Back'),
-            ),
+            TextButton(onPressed: _onClose, child: const Text('Go Back')),
           ],
         ),
       ),
@@ -405,11 +423,12 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => 56;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: context.backgroundColor,
-      child: _tabBarWidget,
-    );
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(color: context.backgroundColor, child: _tabBarWidget);
   }
 
   @override
@@ -437,11 +456,11 @@ class _FavoriteFloatingButton extends StatelessWidget {
         width: 60,
         height: 60,
         decoration: BoxDecoration(
-          color: isFavorite ? AppColors.error : AppColors.primary,
+          color: isFavorite ? AppColors.error : AppColors.infoAccentGreen,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: (isFavorite ? AppColors.error : AppColors.primary)
+              color: (isFavorite ? AppColors.error : AppColors.infoAccentGreen)
                   .withValues(alpha: 0.4),
               blurRadius: 16,
               offset: const Offset(0, 6),
@@ -454,8 +473,8 @@ class _FavoriteFloatingButton extends StatelessWidget {
             return ScaleTransition(scale: animation, child: child);
           },
           child: Icon(
-            isFavorite 
-                ? MingCuteIcons.mgc_star_fill 
+            isFavorite
+                ? MingCuteIcons.mgc_star_fill
                 : MingCuteIcons.mgc_star_line,
             key: ValueKey(isFavorite),
             color: AppColors.white,
@@ -487,7 +506,9 @@ class _SnakeBadges extends StatelessWidget {
 
   Color _getDangerColor() {
     final level = result.dangerSafety.dangerLevel.toLowerCase();
-    if (level.contains('high') || level.contains('deadly') || level.contains('extreme')) {
+    if (level.contains('high') ||
+        level.contains('deadly') ||
+        level.contains('extreme')) {
       return AppColors.dangerHigh;
     }
     if (level.contains('medium') || level.contains('moderate')) {
@@ -516,7 +537,7 @@ class _SnakeBadges extends StatelessWidget {
           _Badge(
             icon: MingCuteIcons.mgc_ruler_line,
             label: result.physicalCharacteristics.formattedLengthRange,
-            color: AppColors.primary,
+            color: AppColors.infoAccentGreen,
           ),
           _Badge(
             icon: MingCuteIcons.mgc_warning_line,
@@ -535,11 +556,7 @@ class _Badge extends StatelessWidget {
   final String label;
   final Color color;
 
-  const _Badge({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
+  const _Badge({required this.icon, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -586,12 +603,21 @@ class _OverviewTab extends StatelessWidget {
           _InfoCard(
             items: [
               _InfoRow(AppStrings.commonName, result.species.commonName),
-              _InfoRow(AppStrings.scientificName, result.species.scientificName),
+              _InfoRow(
+                AppStrings.scientificName,
+                result.species.scientificName,
+              ),
               _InfoRow(AppStrings.snakeType, result.species.snakeType),
               _InfoRow(AppStrings.venomLevel, result.basicInfo.venomLevel),
               _InfoRow(AppStrings.behavior, result.basicInfo.behavior),
-              _InfoRow(AppStrings.nativeRegions, result.basicInfo.nativeRegions.join(', ')),
-              _InfoRow(AppStrings.activePeriods, result.basicInfo.activePeriods),
+              _InfoRow(
+                AppStrings.nativeRegions,
+                result.basicInfo.nativeRegions.join(', '),
+              ),
+              _InfoRow(
+                AppStrings.activePeriods,
+                result.basicInfo.activePeriods,
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -599,23 +625,41 @@ class _OverviewTab extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoCard(
             items: [
-              _InfoRow(AppStrings.colorDescription, result.physicalCharacteristics.colorDescription),
-              _InfoRow(AppStrings.lengthRange, result.physicalCharacteristics.formattedLengthRange),
-              _InfoRow(AppStrings.bodyPattern, result.physicalCharacteristics.bodyPattern),
-              _InfoRow(AppStrings.scaleTexture, result.physicalCharacteristics.scaleTexture),
-              _InfoRow(AppStrings.headShape, result.physicalCharacteristics.headShape),
-              _InfoRow(AppStrings.pupilShape, result.physicalCharacteristics.pupilShape),
-              _InfoRow(AppStrings.tailType, result.physicalCharacteristics.tailType),
+              _InfoRow(
+                AppStrings.colorDescription,
+                result.physicalCharacteristics.colorDescription,
+              ),
+              _InfoRow(
+                AppStrings.lengthRange,
+                result.physicalCharacteristics.formattedLengthRange,
+              ),
+              _InfoRow(
+                AppStrings.bodyPattern,
+                result.physicalCharacteristics.bodyPattern,
+              ),
+              _InfoRow(
+                AppStrings.scaleTexture,
+                result.physicalCharacteristics.scaleTexture,
+              ),
+              _InfoRow(
+                AppStrings.headShape,
+                result.physicalCharacteristics.headShape,
+              ),
+              _InfoRow(
+                AppStrings.pupilShape,
+                result.physicalCharacteristics.pupilShape,
+              ),
+              _InfoRow(
+                AppStrings.tailType,
+                result.physicalCharacteristics.tailType,
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
             AppStrings.disclaimer,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: context.textMutedColor,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: context.textMutedColor, fontSize: 11),
           ),
         ],
       ),
@@ -642,8 +686,14 @@ class _BehaviourTab extends StatelessWidget {
             items: [
               _InfoRow(AppStrings.habitat, result.habitatLifestyle.habitat),
               _InfoRow(AppStrings.lifestyle, result.habitatLifestyle.lifestyle),
-              _InfoRow(AppStrings.geographicRange, result.habitatLifestyle.geographicRange),
-              _InfoRow(AppStrings.preferredEnvironment, result.habitatLifestyle.preferredEnvironment),
+              _InfoRow(
+                AppStrings.geographicRange,
+                result.habitatLifestyle.geographicRange,
+              ),
+              _InfoRow(
+                AppStrings.preferredEnvironment,
+                result.habitatLifestyle.preferredEnvironment,
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -651,11 +701,20 @@ class _BehaviourTab extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoCard(
             items: [
-              _InfoRow(AppStrings.huntingStrategy, result.dietInfo.huntingStrategy),
+              _InfoRow(
+                AppStrings.huntingStrategy,
+                result.dietInfo.huntingStrategy,
+              ),
               _InfoRow(AppStrings.dietType, result.dietInfo.dietType),
-              _InfoRow(AppStrings.feedingFrequency, result.dietInfo.feedingFrequency),
+              _InfoRow(
+                AppStrings.feedingFrequency,
+                result.dietInfo.feedingFrequency,
+              ),
               if (result.dietInfo.typicalPrey.isNotEmpty)
-                _InfoRow(AppStrings.typicalPrey, result.dietInfo.typicalPrey.join(', ')),
+                _InfoRow(
+                  AppStrings.typicalPrey,
+                  result.dietInfo.typicalPrey.join(', '),
+                ),
             ],
           ),
           const SizedBox(height: 20),
@@ -663,21 +722,33 @@ class _BehaviourTab extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoCard(
             items: [
-              _InfoRow(AppStrings.reproductionType, result.reproductionInfo.reproductionType),
-              _InfoRow(AppStrings.breedingSeason, result.reproductionInfo.breedingSeason),
-              _InfoRow(AppStrings.clutchSize, result.reproductionInfo.clutchSize),
-              _InfoRow(AppStrings.gestationPeriod, result.reproductionInfo.gestationPeriod),
-              _InfoRow(AppStrings.matingBehavior, result.reproductionInfo.matingBehavior),
+              _InfoRow(
+                AppStrings.reproductionType,
+                result.reproductionInfo.reproductionType,
+              ),
+              _InfoRow(
+                AppStrings.breedingSeason,
+                result.reproductionInfo.breedingSeason,
+              ),
+              _InfoRow(
+                AppStrings.clutchSize,
+                result.reproductionInfo.clutchSize,
+              ),
+              _InfoRow(
+                AppStrings.gestationPeriod,
+                result.reproductionInfo.gestationPeriod,
+              ),
+              _InfoRow(
+                AppStrings.matingBehavior,
+                result.reproductionInfo.matingBehavior,
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
             AppStrings.disclaimer,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: context.textMutedColor,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: context.textMutedColor, fontSize: 11),
           ),
         ],
       ),
@@ -693,7 +764,9 @@ class _DangerTab extends StatelessWidget {
 
   Color _getDangerColor() {
     final level = result.dangerSafety.dangerLevel.toLowerCase();
-    if (level.contains('high') || level.contains('deadly') || level.contains('extreme')) {
+    if (level.contains('high') ||
+        level.contains('deadly') ||
+        level.contains('extreme')) {
       return AppColors.dangerHigh;
     }
     if (level.contains('medium') || level.contains('moderate')) {
@@ -769,9 +842,10 @@ class _DangerTab extends StatelessWidget {
             _SectionTitle(AppStrings.biteSymptoms),
             const SizedBox(height: 12),
             _InfoCard(
-              items: result.dangerSafety.biteSymptoms
-                  .map((s) => _BulletItem(s))
-                  .toList(),
+              items:
+                  result.dangerSafety.biteSymptoms
+                      .map((s) => _BulletItem(s))
+                      .toList(),
             ),
           ],
           if (result.dangerSafety.safetyTips.isNotEmpty) ...[
@@ -779,19 +853,17 @@ class _DangerTab extends StatelessWidget {
             _SectionTitle(AppStrings.safetyTips),
             const SizedBox(height: 12),
             _InfoCard(
-              items: result.dangerSafety.safetyTips
-                  .map((t) => _BulletItem(t))
-                  .toList(),
+              items:
+                  result.dangerSafety.safetyTips
+                      .map((t) => _BulletItem(t))
+                      .toList(),
             ),
           ],
           const SizedBox(height: 16),
           Text(
             AppStrings.disclaimer,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: context.textMutedColor,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: context.textMutedColor, fontSize: 11),
           ),
         ],
       ),
@@ -815,28 +887,29 @@ class _MoreTab extends StatelessWidget {
           if (result.commonQuestions.isNotEmpty) ...[
             _SectionTitle(AppStrings.commonQuestions),
             const SizedBox(height: 12),
-            ...result.commonQuestions.map((q) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _QuestionCard(question: q),
-            )),
+            ...result.commonQuestions.map(
+              (q) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _QuestionCard(question: q),
+              ),
+            ),
           ],
           if (result.possibleAlternatives.isNotEmpty) ...[
             const SizedBox(height: 8),
             _SectionTitle(AppStrings.possibleAlternatives),
             const SizedBox(height: 12),
-            ...result.possibleAlternatives.map((alt) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _AlternativeCard(alternative: alt),
-            )),
+            ...result.possibleAlternatives.map(
+              (alt) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _AlternativeCard(alternative: alt),
+              ),
+            ),
           ],
           const SizedBox(height: 16),
           Text(
             AppStrings.disclaimer,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: context.textMutedColor,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: context.textMutedColor, fontSize: 11),
           ),
         ],
       ),
@@ -879,9 +952,7 @@ class _InfoCard extends StatelessWidget {
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        children: items,
-      ),
+      child: Column(children: items),
     );
   }
 }

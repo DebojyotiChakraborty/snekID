@@ -23,7 +23,7 @@ class OnboardingPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Spacer(flex: 1),
-          
+
           // Title
           Text(
             title,
@@ -44,13 +44,7 @@ class OnboardingPage extends StatelessWidget {
           const SizedBox(height: 40),
 
           // Image
-          Expanded(
-            flex: 3,
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.contain,
-            ),
-          ),
+          Expanded(flex: 4, child: Image.asset(imagePath, fit: BoxFit.contain)),
 
           const Spacer(flex: 1),
         ],

@@ -9,6 +9,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/router/app_router.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../common/widgets/animated_dialog.dart';
 
 /// Settings screen with iOS-style design
 class SettingsScreen extends ConsumerWidget {
@@ -17,7 +18,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    
+
     return Scaffold(
       backgroundColor: context.backgroundColor,
       appBar: AppBar(
@@ -32,7 +33,10 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: context.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(MingCuteIcons.mgc_arrow_left_line, color: context.textPrimaryColor),
+          icon: Icon(
+            MingCuteIcons.mgc_left_line,
+            color: context.textPrimaryColor,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -90,47 +94,24 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppStrings.theme,
-          style: TextStyle(color: context.textPrimaryColor),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: AppThemeMode.values.map((mode) {
-            return RadioListTile<AppThemeMode>(
-              title: Text(
-                mode.displayName,
-                style: TextStyle(color: context.textPrimaryColor),
-              ),
-              value: mode,
-              groupValue: currentMode,
-              activeColor: AppColors.primary,
-              onChanged: (value) {
-                if (value != null) {
-                  HapticFeedback.lightImpact();
-                  ref.read(themeModeProvider.notifier).setThemeMode(value);
-                  Navigator.of(context).pop();
-                }
-              },
-            );
-          }).toList(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              AppStrings.cancel,
-              style: TextStyle(color: context.textSecondaryColor),
-            ),
-          ),
-        ],
-      ),
+  void _showThemeDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppThemeMode currentMode,
+  ) {
+    final options = AppThemeMode.values.map((m) => m.displayName).toList();
+    final selectedIndex = AppThemeMode.values.indexOf(currentMode);
+
+    ThemePickerDialog.show(
+      context,
+      options: options,
+      selectedIndex: selectedIndex,
+      onSelected: (index) {
+        HapticFeedback.lightImpact();
+        ref
+            .read(themeModeProvider.notifier)
+            .setThemeMode(AppThemeMode.values[index]);
+      },
     );
   }
 
@@ -148,10 +129,7 @@ class _SettingsGroup extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const _SettingsGroup({
-    required this.title,
-    required this.children,
-  });
+  const _SettingsGroup({required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -175,9 +153,7 @@ class _SettingsGroup extends StatelessWidget {
             color: context.surfaceColor,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Column(
-            children: children,
-          ),
+          child: Column(children: children),
         ),
       ],
     );
@@ -223,14 +199,10 @@ class _SettingsTile extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 18,
-                ),
+                child: Icon(icon, color: Colors.white, size: 18),
               ),
               const SizedBox(width: 12),
-              
+
               // Title
               Expanded(
                 child: Text(
@@ -242,7 +214,7 @@ class _SettingsTile extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Value
               if (value != null) ...[
                 Text(
@@ -254,7 +226,7 @@ class _SettingsTile extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
               ],
-              
+
               // Chevron
               Icon(
                 MingCuteIcons.mgc_right_line,

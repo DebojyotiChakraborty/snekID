@@ -12,6 +12,8 @@ import '../../core/constants/app_strings.dart';
 import '../../data/models/analysis_history.dart';
 import '../../data/models/snake_identification.dart';
 import '../../providers/history_provider.dart';
+import '../common/widgets/animated_dialog.dart';
+import '../common/widgets/drops.dart';
 
 /// History screen showing past analyses and favorites
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -42,124 +44,79 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
   }
 
   void _clearHistory() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          AppStrings.clearHistory,
-          style: TextStyle(
-            color: context.textPrimaryColor,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          AppStrings.clearHistoryConfirm,
-          style: TextStyle(
-            color: context.textSecondaryColor,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppStrings.cancel,
-              style: TextStyle(color: context.textTertiaryColor),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              ref.read(historyProvider.notifier).clearHistory();
-              Navigator.pop(context);
-              HapticFeedback.mediumImpact();
-            },
-            child: const Text(
-              AppStrings.clear,
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+    AnimatedDialog.show(
+      context,
+      title: AppStrings.clearHistory,
+      subtitle: AppStrings.clearHistoryConfirm,
+      confirmLabel: AppStrings.clear,
+      cancelLabel: AppStrings.cancel,
+      isDestructive: true,
+      onConfirm: () {
+        ref.read(historyProvider.notifier).clearHistory();
+        Navigator.pop(context);
+        HapticFeedback.mediumImpact();
+      },
+      onCancel: () => Navigator.pop(context),
     );
   }
 
   void _clearFavorites() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          AppStrings.clearFavorites,
-          style: TextStyle(
-            color: context.textPrimaryColor,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: Text(
-          AppStrings.clearFavoritesConfirm,
-          style: TextStyle(
-            color: context.textSecondaryColor,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppStrings.cancel,
-              style: TextStyle(color: context.textTertiaryColor),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              ref.read(favoritesProvider.notifier).clearFavorites();
-              Navigator.pop(context);
-              HapticFeedback.mediumImpact();
-            },
-            child: const Text(
-              AppStrings.clear,
-              style: TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
+    AnimatedDialog.show(
+      context,
+      title: AppStrings.clearFavorites,
+      subtitle: AppStrings.clearFavoritesConfirm,
+      confirmLabel: AppStrings.clear,
+      cancelLabel: AppStrings.cancel,
+      isDestructive: true,
+      onConfirm: () {
+        ref.read(favoritesProvider.notifier).clearFavorites();
+        Navigator.pop(context);
+        HapticFeedback.mediumImpact();
+      },
+      onCancel: () => Navigator.pop(context),
     );
   }
 
   void _navigateToResult(String? jsonString, String? imagePath) {
     if (jsonString == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Details not available for this item'),
-          backgroundColor: AppColors.textMuted,
+      Drops.show(
+        context,
+        title: 'Details not available for this item',
+        backgroundColor: AppColors.textMuted,
+        position: DropPosition.bottom,
+        icon: MingCuteIcons.mgc_information_line,
+        iconColor: AppColors.white,
+        titleTextStyle: const TextStyle(
+          color: AppColors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
         ),
       );
       return;
     }
-    
+
     try {
       final jsonMap = jsonDecode(jsonString);
       final identification = SnakeIdentification.fromJson(jsonMap);
       final imageFile = imagePath != null ? File(imagePath) : null;
-      
+
       context.pushNamed(
         'results',
-        extra: {
-          'identification': identification,
-          'imageFile': imageFile,
-        },
+        extra: {'identification': identification, 'imageFile': imageFile},
       );
     } catch (e) {
       debugPrint('Error parsing history item: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error opening details'),
-          backgroundColor: AppColors.error,
+      Drops.show(
+        context,
+        title: 'Error opening details',
+        backgroundColor: AppColors.error,
+        position: DropPosition.bottom,
+        icon: MingCuteIcons.mgc_warning_line,
+        iconColor: AppColors.white,
+        titleTextStyle: const TextStyle(
+          color: AppColors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
         ),
       );
     }
@@ -177,9 +134,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(
-            MingCuteIcons.mgc_arrow_left_line,
-            color: context.textPrimaryColor,
+          icon: const Icon(
+            MingCuteIcons.mgc_left_line,
+            color: AppColors.textPrimary,
           ),
           onPressed: _onClose,
         ),
@@ -197,17 +154,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
             animation: _tabController,
             builder: (context, child) {
               final isHistoryTab = _tabController.index == 0;
-              final hasItems = isHistoryTab ? history.isNotEmpty : favorites.isNotEmpty;
-              
+              final hasItems =
+                  isHistoryTab ? history.isNotEmpty : favorites.isNotEmpty;
+
               if (!hasItems) return const SizedBox.shrink();
-              
+
               return IconButton(
                 icon: Icon(
                   MingCuteIcons.mgc_delete_2_line,
                   color: AppColors.error,
                 ),
                 onPressed: isHistoryTab ? _clearHistory : _clearFavorites,
-                tooltip: isHistoryTab ? AppStrings.clearHistory : AppStrings.clearFavorites,
+                tooltip:
+                    isHistoryTab
+                        ? AppStrings.clearHistory
+                        : AppStrings.clearFavorites,
               );
             },
           ),
@@ -218,9 +179,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: context.isDarkMode 
-                  ? context.surfaceLightColor 
-                  : context.backgroundTertiaryColor,
+              color:
+                  context.isDarkMode
+                      ? context.surfaceLightColor
+                      : context.backgroundTertiaryColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: TabBar(
@@ -281,7 +243,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
               HapticFeedback.mediumImpact();
               ref.read(historyProvider.notifier).deleteAnalysis(id);
             },
-            onTap: (item) => _navigateToResult(item.fullResultJson, item.imagePath),
+            onTap:
+                (item) =>
+                    _navigateToResult(item.fullResultJson, item.imagePath),
           ),
           // Favorites tab
           _FavoritesList(
@@ -290,7 +254,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
               HapticFeedback.mediumImpact();
               ref.read(favoritesProvider.notifier).removeFavorite(id);
             },
-            onTap: (item) => _navigateToResult(item.fullResultJson, item.imagePath),
+            onTap:
+                (item) =>
+                    _navigateToResult(item.fullResultJson, item.imagePath),
           ),
         ],
       ),
@@ -397,11 +363,7 @@ class _HistoryCard extends StatelessWidget {
                   topLeft: Radius.circular(15),
                   bottomLeft: Radius.circular(15),
                 ),
-                child: SizedBox(
-                  width: 90,
-                  height: 90,
-                  child: _buildImage(),
-                ),
+                child: SizedBox(width: 90, height: 90, child: _buildImage()),
               ),
               // Info
               Expanded(
@@ -611,128 +573,130 @@ class _FavoriteCard extends StatelessWidget {
               Container(
                 width: 90,
                 height: 90,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.error.withValues(alpha: 0.2),
-                    AppColors.error.withValues(alpha: 0.1),
-                  ],
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.error.withValues(alpha: 0.2),
+                      AppColors.error.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    bottomLeft: Radius.circular(15),
+                  ),
                 ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  bottomLeft: Radius.circular(15),
-                ),
-              ),
-              child: item.imagePath != null
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        bottomLeft: Radius.circular(15),
-                      ),
-                      child: _buildImage(item.imagePath!),
-                    )
-                  : const Center(
-                      child: Icon(
-                        MingCuteIcons.mgc_star_fill,
-                        color: AppColors.error,
-                        size: 36,
-                      ),
-                    ),
-            ),
-            // Info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.commonName,
-                      style: TextStyle(
-                        color: context.textPrimaryColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      item.scientificName,
-                      style: TextStyle(
-                        color: context.textTertiaryColor,
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        // Type badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+                child:
+                    item.imagePath != null
+                        ? ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            bottomLeft: Radius.circular(15),
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            item.snakeType,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: _buildImage(item.imagePath!),
+                        )
+                        : const Center(
+                          child: Icon(
+                            MingCuteIcons.mgc_star_fill,
+                            color: AppColors.error,
+                            size: 36,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        // Danger badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getDangerColor().withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: _getDangerColor().withValues(alpha: 0.3),
+              ),
+              // Info
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.commonName,
+                        style: TextStyle(
+                          color: context.textPrimaryColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.scientificName,
+                        style: TextStyle(
+                          color: context.textTertiaryColor,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          // Type badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              item.snakeType,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                          child: Text(
-                            item.dangerLevel,
+                          const SizedBox(width: 8),
+                          // Danger badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getDangerColor().withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: _getDangerColor().withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Text(
+                              item.dangerLevel,
+                              style: TextStyle(
+                                color: _getDangerColor(),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          // Date
+                          Text(
+                            item.formattedDate,
                             style: TextStyle(
-                              color: _getDangerColor(),
+                              color: context.textMutedColor,
                               fontSize: 10,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                        const Spacer(),
-                        // Date
-                        Text(
-                          item.formattedDate,
-                          style: TextStyle(
-                            color: context.textMutedColor,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildImage(String path) {
@@ -788,11 +752,7 @@ class _EmptyState extends StatelessWidget {
                 color: context.surfaceLightColor,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: context.textMutedColor,
-                size: 40,
-              ),
+              child: Icon(icon, color: context.textMutedColor, size: 40),
             ),
             const SizedBox(height: 24),
             Text(
@@ -807,10 +767,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: TextStyle(
-                color: context.textTertiaryColor,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: context.textTertiaryColor, fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],

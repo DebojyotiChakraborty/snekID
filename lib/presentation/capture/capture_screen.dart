@@ -16,6 +16,7 @@ import '../../providers/capture_provider.dart';
 import 'widgets/camera_frame_overlay.dart';
 import 'widgets/capture_controls.dart';
 import 'widgets/capture_confirmation_dialog.dart';
+import '../common/widgets/drops.dart';
 
 /// Capture screen with camera preview
 class CaptureScreen extends ConsumerStatefulWidget {
@@ -38,6 +39,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   // State for captured image preview
   File? _capturedImage;
   bool _showConfirmation = false;
+  bool _isRetaking = false;
 
   @override
   void initState() {
@@ -56,7 +58,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   }
 
   Future<void> _turnOffFlash() async {
-    if (_cameraController != null && _cameraController!.value.isInitialized && _isFlashOn) {
+    if (_cameraController != null &&
+        _cameraController!.value.isInitialized &&
+        _isFlashOn) {
       try {
         await _cameraController!.setFlashMode(FlashMode.off);
       } catch (e) {
@@ -200,14 +204,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   void _onRetake() async {
     setState(() {
       _showConfirmation = false;
+      _isRetaking = true;
     });
-    
-    // Wait for animation to slide down
-    await Future.delayed(const Duration(milliseconds: 300));
-    
+
+    // Wait for animation to slide down (matches dialog animation duration)
+    await Future.delayed(const Duration(milliseconds: 500));
+
     if (mounted) {
       setState(() {
         _capturedImage = null;
+        _isRetaking = false;
       });
     }
   }
@@ -221,21 +227,17 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
           _isFlashOn = false;
         });
       }
-      
+
       ref.read(selectedImageProvider.notifier).state = _capturedImage;
       if (mounted) {
-        await context.pushNamed(
-          'analysis',
-          extra: {'imageFile': _capturedImage},
-        );
-        
-        // Reset state after returning regardless of result
-        if (mounted) {
-          setState(() {
-            _capturedImage = null;
-            _showConfirmation = false;
-          });
-        }
+        // Reset state before navigating to ensure it's clean if we come back
+        final currentImage = _capturedImage;
+        setState(() {
+          _capturedImage = null;
+          _showConfirmation = false;
+        });
+
+        await context.pushNamed('analysis', extra: {'imageFile': currentImage});
       }
     }
   }
@@ -259,7 +261,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     }
 
     final newFlashState = !_isFlashOn;
-    
+
     try {
       // Use torch mode for continuous flash (light stays on)
       await _cameraController!.setFlashMode(
@@ -275,10 +277,17 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
 
   void _showError(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppColors.error,
+      Drops.show(
+        context,
+        title: message,
+        backgroundColor: AppColors.error,
+        position: DropPosition.bottom,
+        icon: MingCuteIcons.mgc_warning_line,
+        iconColor: AppColors.white,
+        titleTextStyle: const TextStyle(
+          color: AppColors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
         ),
       );
     }
@@ -310,16 +319,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
             _buildCameraPreview()
           else
             _buildLoadingState(),
-            
+
           // Captured Image Preview (Stacked on top)
-          if (_capturedImage != null)
-            _buildCapturedImagePreview(),
+          if (_capturedImage != null) _buildCapturedImagePreview(),
 
           // Frame overlay (show on camera preview or captured image)
           if (_isInitialized || _showConfirmation)
-            CameraFrameOverlay(
-              showCrosshair: !_showConfirmation,
-            ),
+            CameraFrameOverlay(showCrosshair: !_showConfirmation),
 
           // Settings button at top right (only show when not in confirmation mode)
           if (!_showConfirmation)
@@ -331,18 +337,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                   padding: const EdgeInsets.all(16),
                   child: GestureDetector(
                     onTap: _openSettings,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.black.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        MingCuteIcons.mgc_settings_3_line,
-                        color: AppColors.textPrimary,
-                        size: 24,
-                      ),
+                    child: const Icon(
+                      MingCuteIcons.mgc_settings_3_line,
+                      color: AppColors.textPrimary,
+                      size: 28,
                     ),
                   ),
                 ),
@@ -366,16 +364,15 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
             ),
 
           // Confirmation dialog (Animated)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            bottom: _showConfirmation ? 0 : -200,
+          Positioned(
+            bottom: 0,
             left: 0,
             right: 0,
             child: SafeArea(
               child: CaptureConfirmationDialog(
                 onRetake: _onRetake,
                 onIdentify: _onIdentify,
+                isVisible: _showConfirmation,
               ),
             ),
           ),
@@ -389,18 +386,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Hero(
-            tag: 'snake_image',
-            child: Image.file(
-              _capturedImage!,
-              fit: BoxFit.cover,
+          AnimatedOpacity(
+            opacity: _isRetaking ? 0.0 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            child: Hero(
+              tag: 'snake_image',
+              child: Image.file(_capturedImage!, fit: BoxFit.cover),
             ),
           ),
           // Gradient overlay for better text visibility if needed, or simply style
           if (_showConfirmation)
-            Container(
-              color: Colors.black12,
-            ),
+            Container(color: Colors.black.withValues(alpha: 0.12)),
         ],
       ),
     );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
@@ -71,100 +70,65 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background gradient
-          Container(
-            decoration: BoxDecoration(
-              gradient: AppColors.onboardingGradient(isDark: isDarkMode),
-            ),
-          ),
-
-          // Bottom gradient overlay
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              height: 280,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    AppColors.onboardingGreen.withValues(alpha: 0.2),
-                    AppColors.onboardingGreen.withValues(alpha: 0.4),
-                    AppColors.onboardingGreen.withValues(alpha: 0.6),
-                    AppColors.onboardingGreen.withValues(alpha: 0.8),
-                    AppColors.onboardingGreen,
-                  ],
-                  stops: const [0.0, 0.6, 0.75, 0.85, 0.92, 1.0],
-                ),
+      // Content
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Page content
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  ref.read(onboardingPageProvider.notifier).state = index;
+                },
+                children: [
+                  OnboardingPage(
+                    imagePath: _imagePaths[0],
+                    title: AppStrings.onboardingTitle1,
+                    subtitle: AppStrings.onboardingSubtitle1,
+                  ),
+                  OnboardingPage(
+                    imagePath: _imagePaths[1],
+                    title: AppStrings.onboardingTitle2,
+                    subtitle: AppStrings.onboardingSubtitle2,
+                  ),
+                  OnboardingPage(
+                    imagePath: _imagePaths[2],
+                    title: AppStrings.onboardingTitle3,
+                  ),
+                ],
               ),
             ),
-          ),
 
-          // Content
-          SafeArea(
-            child: Column(
-              children: [
-                // Page content
-                Expanded(
-                  child: PageView(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      ref.read(onboardingPageProvider.notifier).state = index;
-                    },
-                    children: [
-                      OnboardingPage(
-                        imagePath: _imagePaths[0],
-                        title: AppStrings.onboardingTitle1,
-                        subtitle: AppStrings.onboardingSubtitle1,
-                      ),
-                      OnboardingPage(
-                        imagePath: _imagePaths[1],
-                        title: AppStrings.onboardingTitle2,
-                        subtitle: AppStrings.onboardingSubtitle2,
-                      ),
-                      OnboardingPage(
-                        imagePath: _imagePaths[2],
-                        title: AppStrings.onboardingTitle3,
-                      ),
-                    ],
+            // Bottom section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                children: [
+                  // Next/Continue button
+                  HapticButton(
+                    onPressed: _onNextPressed,
+                    backgroundColor: const Color(0xFFFEEA53),
+                    child: Text(
+                      currentPage == _totalPages - 1
+                          ? AppStrings.continueText
+                          : AppStrings.next,
+                      style: AppTheme.buttonText,
+                    ),
                   ),
-                ),
 
-                // Bottom section
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  child: Column(
-                    children: [
-                      // Next/Continue button
-                      HapticButton(
-                        onPressed: _onNextPressed,
-                        child: Text(
-                          currentPage == _totalPages - 1
-                              ? AppStrings.continueText
-                              : AppStrings.next,
-                          style: AppTheme.buttonText,
-                        ),
-                      ),
+                  const SizedBox(height: 24),
 
-                      const SizedBox(height: 24),
-
-                      // Bar indicators at the bottom
-                      OnboardingBarIndicator(
-                        currentPage: currentPage,
-                        totalPages: _totalPages,
-                      ),
-                    ],
+                  // Bar indicators at the bottom
+                  OnboardingBarIndicator(
+                    currentPage: currentPage,
+                    totalPages: _totalPages,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
