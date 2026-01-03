@@ -8,11 +8,11 @@ class StorageRepository {
   static const String _favoritesBoxName = 'favorite_snakes';
 
   /// Get history box (already opened in main.dart)
-  Box<AnalysisHistory> get _historyBox => 
+  Box<AnalysisHistory> get _historyBox =>
       Hive.box<AnalysisHistory>(_historyBoxName);
-  
+
   /// Get favorites box (already opened in main.dart)
-  Box<FavoriteSnake> get _favoritesBox => 
+  Box<FavoriteSnake> get _favoritesBox =>
       Hive.box<FavoriteSnake>(_favoritesBoxName);
 
   // ============== History Operations ==============
@@ -24,9 +24,20 @@ class StorageRepository {
     return entries;
   }
 
-  /// Add a new history entry
+  /// Add a new history entry (checks for duplicates by common name and recent timestamp)
   Future<void> addToHistory(AnalysisHistory entry) async {
-    await _historyBox.put(entry.id, entry);
+    // Check if the same snake was analyzed very recently (within 10 seconds)
+    // This prevents duplicates from widget rebuilds or multiple save attempts
+    final now = DateTime.now();
+    final recentDuplicate = _historyBox.values.any((e) {
+      final timeDiff = now.difference(e.analyzedAt).inSeconds.abs();
+      return e.commonName == entry.commonName && timeDiff < 10;
+    });
+
+    // Only add if no recent duplicate found
+    if (!recentDuplicate) {
+      await _historyBox.put(entry.id, entry);
+    }
   }
 
   /// Delete a history entry
@@ -71,8 +82,7 @@ class StorageRepository {
   /// Get favorite by common name
   FavoriteSnake? getFavoriteByName(String commonName) {
     try {
-      return _favoritesBox.values
-          .firstWhere((f) => f.commonName == commonName);
+      return _favoritesBox.values.firstWhere((f) => f.commonName == commonName);
     } catch (_) {
       return null;
     }

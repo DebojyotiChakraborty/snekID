@@ -134,9 +134,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             MingCuteIcons.mgc_left_line,
-            color: AppColors.textPrimary,
+            color: context.textPrimaryColor,
           ),
           onPressed: _onClose,
         ),
@@ -174,7 +174,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(48),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.all(4),
@@ -207,27 +207,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                 fontWeight: FontWeight.w500,
                 fontFamily: 'Inter',
               ),
-              tabs: [
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(MingCuteIcons.mgc_time_line, size: 18),
-                      const SizedBox(width: 6),
-                      Text(AppStrings.recentAnalyses),
-                    ],
-                  ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(MingCuteIcons.mgc_star_line, size: 18),
-                      const SizedBox(width: 6),
-                      Text(AppStrings.favorites),
-                    ],
-                  ),
-                ),
+              labelPadding: EdgeInsets.zero,
+              tabs: const [
+                Tab(height: 32, child: Text(AppStrings.recentAnalyses)),
+                Tab(height: 32, child: Text(AppStrings.favorites)),
               ],
             ),
           ),
@@ -283,6 +266,7 @@ class _HistoryList extends StatelessWidget {
         icon: MingCuteIcons.mgc_time_line,
         title: AppStrings.noHistoryYet,
         subtitle: AppStrings.noHistoryDescription,
+        imagePath: 'assets/images/ui_illustrations/no_recents.png',
       );
     }
 
@@ -337,7 +321,13 @@ class _HistoryCard extends StatelessWidget {
       child: Dismissible(
         key: Key(item.id),
         direction: DismissDirection.endToStart,
-        onDismissed: (_) => onDelete(),
+        confirmDismiss: (direction) async {
+          final shouldDelete = await _showDeleteConfirmation(context);
+          if (shouldDelete) {
+            onDelete();
+          }
+          return false; // We handle deletion in the callback
+        },
         background: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
@@ -495,6 +485,7 @@ class _FavoritesList extends StatelessWidget {
         icon: MingCuteIcons.mgc_star_line,
         title: AppStrings.noFavoritesYet,
         subtitle: AppStrings.noFavoritesDescription,
+        imagePath: 'assets/images/ui_illustrations/empty_starred.png',
       );
     }
 
@@ -514,6 +505,26 @@ class _FavoritesList extends StatelessWidget {
       },
     );
   }
+}
+
+/// Helper function to show delete confirmation dialog
+Future<bool> _showDeleteConfirmation(BuildContext context) async {
+  bool confirmed = false;
+  await AnimatedDialog.show(
+    context,
+    title: AppStrings.deleteItem,
+    subtitle: AppStrings.deleteItemConfirm,
+    confirmLabel: AppStrings.delete,
+    cancelLabel: AppStrings.cancel,
+    isDestructive: true,
+    onConfirm: () {
+      confirmed = true;
+      Navigator.pop(context);
+      HapticFeedback.mediumImpact();
+    },
+    onCancel: () => Navigator.pop(context),
+  );
+  return confirmed;
 }
 
 /// Single favorite card
@@ -549,7 +560,13 @@ class _FavoriteCard extends StatelessWidget {
       child: Dismissible(
         key: Key(item.id),
         direction: DismissDirection.endToStart,
-        onDismissed: (_) => onDelete(),
+        confirmDismiss: (direction) async {
+          final shouldDelete = await _showDeleteConfirmation(context);
+          if (shouldDelete) {
+            onDelete();
+          }
+          return false; // We handle deletion in the callback
+        },
         background: Container(
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
@@ -642,13 +659,15 @@ class _FavoriteCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.15),
+                              color: AppColors.infoAccentGreen.withValues(
+                                alpha: 0.15,
+                              ),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               item.snakeType,
                               style: const TextStyle(
-                                color: AppColors.primary,
+                                color: AppColors.infoAccentGreen,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -730,11 +749,13 @@ class _EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String? imagePath;
 
   const _EmptyState({
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.imagePath,
   });
 
   @override
@@ -745,16 +766,24 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: context.surfaceLightColor,
-                shape: BoxShape.circle,
+            if (imagePath != null)
+              Image.asset(
+                imagePath!,
+                width: 200,
+                height: 200,
+                fit: BoxFit.contain,
+              )
+            else
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: context.surfaceLightColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: context.textMutedColor, size: 40),
               ),
-              child: Icon(icon, color: context.textMutedColor, size: 40),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             Text(
               title,
               style: TextStyle(

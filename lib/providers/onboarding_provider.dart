@@ -78,3 +78,36 @@ class OnboardingController extends StateNotifier<AsyncValue<bool>> {
 
 /// Provider for the current onboarding page index
 final onboardingPageProvider = StateProvider<int>((ref) => 0);
+
+/// Disclaimer viewing tracking
+const String _disclaimerViewedKey = 'disclaimer_viewed';
+
+/// Provider to check if disclaimer has been viewed
+final disclaimerViewedProvider = FutureProvider<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(_disclaimerViewedKey) ?? false;
+});
+
+/// Provider to mark disclaimer as viewed
+final disclaimerControllerProvider =
+    StateNotifierProvider<DisclaimerController, AsyncValue<bool>>((ref) {
+      return DisclaimerController(ref);
+    });
+
+class DisclaimerController extends StateNotifier<AsyncValue<bool>> {
+  final Ref _ref;
+
+  DisclaimerController(this._ref) : super(const AsyncValue.data(false));
+
+  Future<void> markViewed() async {
+    state = const AsyncValue.loading();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_disclaimerViewedKey, true);
+      state = const AsyncValue.data(true);
+      _ref.invalidate(disclaimerViewedProvider);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+}

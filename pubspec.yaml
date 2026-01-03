@@ -60,6 +60,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/onboarding_images/
+    - assets/images/ui_illustrations/
     - assets/sounds/
     - .env
 

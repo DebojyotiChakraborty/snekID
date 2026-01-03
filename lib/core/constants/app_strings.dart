@@ -4,17 +4,21 @@ class AppStrings {
 
   // App info
   static const String appName = 'SnekID';
-  static const String appTagline = 'Most accurate and efficient way to identify snakes';
+  static const String appTagline =
+      'Most accurate and efficient way to identify snakes';
 
   // Onboarding
   static const String onboardingTitle1 = 'Welcome to SnekID';
-  static const String onboardingSubtitle1 = 'Most accurate and efficient way to identify snakes';
-  
+  static const String onboardingSubtitle1 =
+      'Most accurate and efficient way to identify snakes';
+
   static const String onboardingTitle2 = 'Snap a photo to identify snake';
-  static const String onboardingSubtitle2 = 'Quickly and accurately identify snake species with just a photo';
-  
+  static const String onboardingSubtitle2 =
+      'Quickly and accurately identify snake species with just a photo';
+
   static const String onboardingTitle3 = 'Powered by Artificial Intelligence';
-  static const String onboardingSubtitle3 = 'Advanced AI technology analyzes your photos for accurate identification';
+  static const String onboardingSubtitle3 =
+      'Advanced AI technology analyzes your photos for accurate identification';
 
   // Buttons
   static const String next = 'Next';
@@ -31,7 +35,7 @@ class AppStrings {
   static const String selectFromGallery = 'Select from Gallery';
   static const String switchCamera = 'Switch Camera';
   static const String history = 'History';
-  
+
   // Capture confirmation
   static const String identifyQuestion = 'Do you want to identify this snake?';
   static const String retake = 'Retake';
@@ -39,7 +43,8 @@ class AppStrings {
 
   // Analysis
   static const String analyzing = 'Analyzing image...';
-  static const String analyzingDescription = 'Our AI is identifying the snake species';
+  static const String analyzingDescription =
+      'Our AI is identifying the snake species';
   static const String photoAnalyzedAt = 'Your photo analyzed at';
 
   // Results
@@ -53,7 +58,7 @@ class AppStrings {
   static const String savedToHistory = 'Saved to history';
 
   // Warning
-  static const String lowConfidenceWarning = 
+  static const String lowConfidenceWarning =
       'This information may be incorrect. Please do not approach the snake for safety reasons and consult wildlife experts.';
 
   // Tabs
@@ -145,35 +150,47 @@ class AppStrings {
   static const String recentAnalyses = 'Recent';
   static const String favorites = 'Starred';
   static const String noHistoryYet = 'No analysis history yet';
-  static const String noHistoryDescription = 'Your analyzed snakes will appear here';
+  static const String noHistoryDescription =
+      'Your analyzed snakes will appear here';
   static const String noFavoritesYet = 'No starred items yet';
-  static const String noFavoritesDescription = 'Tap the star icon to add snakes to your starred list';
+  static const String noFavoritesDescription =
+      'Tap the star icon to add snakes to your starred list';
   static const String clearHistory = 'Clear History';
-  static const String clearHistoryConfirm = 'Are you sure you want to clear all history?';
+  static const String clearHistoryConfirm =
+      'Are you sure you want to clear all history?';
   static const String clearFavorites = 'Clear Starred';
-  static const String clearFavoritesConfirm = 'Are you sure you want to clear all starred items?';
+  static const String clearFavoritesConfirm =
+      'Are you sure you want to clear all starred items?';
   static const String delete = 'Delete';
+  static const String deleteItem = 'Delete Item';
+  static const String deleteItemConfirm =
+      'Are you sure you want to delete this item?';
   static const String clear = 'Clear';
 
   // Errors
   static const String errorGeneric = 'Something went wrong. Please try again.';
-  static const String errorNetwork = 'Network error. Please check your connection.';
-  static const String errorCamera = 'Unable to access camera. Please check permissions.';
-  static const String errorGallery = 'Unable to access gallery. Please check permissions.';
-  static const String errorAnalysis = 'Failed to analyze image. Please try again.';
-  static const String errorInvalidResponse = 'Unable to process the response. Please try again.';
+  static const String errorNetwork =
+      'Network error. Please check your connection.';
+  static const String errorCamera =
+      'Unable to access camera. Please check permissions.';
+  static const String errorGallery =
+      'Unable to access gallery. Please check permissions.';
+  static const String errorAnalysis =
+      'Failed to analyze image. Please try again.';
+  static const String errorInvalidResponse =
+      'Unable to process the response. Please try again.';
 
   // Permissions
   static const String cameraPermissionTitle = 'Camera Permission Required';
-  static const String cameraPermissionMessage = 
+  static const String cameraPermissionMessage =
       'SnekID needs camera access to capture photos of snakes for identification.';
   static const String galleryPermissionTitle = 'Gallery Permission Required';
-  static const String galleryPermissionMessage = 
+  static const String galleryPermissionMessage =
       'SnekID needs gallery access to select photos for snake identification.';
   static const String openSettings = 'Open Settings';
 
   // Disclaimer
-  static const String disclaimer = 
+  static const String disclaimer =
       'AI-based identification may be inaccurate. Do not rely solely on this app for safety decisions.';
 
   // Settings
@@ -185,7 +202,8 @@ class AppStrings {
   static const String themeSystem = 'System';
   static const String general = 'General';
   static const String viewOnboarding = 'View Onboarding';
-  static const String viewOnboardingDescription = 'See the app introduction again';
+  static const String viewOnboardingDescription =
+      'See the app introduction again';
   static const String about = 'About';
   static const String version = 'Version';
   static const String appDescription = 'Snake identification powered by AI';

@@ -523,7 +523,7 @@ class _SnakeBadges extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(0, 16, 16, 0),
       child: Wrap(
         alignment: WrapAlignment.start,
         spacing: 8,
@@ -543,6 +543,12 @@ class _SnakeBadges extends StatelessWidget {
             icon: MingCuteIcons.mgc_warning_line,
             label: result.dangerSafety.dangerLevel,
             color: _getDangerColor(),
+          ),
+          _Badge(
+            icon: MingCuteIcons.mgc_brain_line,
+            label: '${result.confidencePercentage} Accuracy',
+            color:
+                result.isHighConfidence ? AppColors.success : AppColors.warning,
           ),
         ],
       ),

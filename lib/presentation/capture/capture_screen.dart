@@ -20,6 +20,7 @@ import 'widgets/capture_confirmation_dialog.dart';
 import 'widgets/intro_prompt_alert.dart';
 import '../common/widgets/drops.dart';
 import '../common/widgets/info_bubble.dart';
+import '../../providers/onboarding_provider.dart' as onboarding;
 
 /// Capture screen with camera preview
 class CaptureScreen extends ConsumerStatefulWidget {
@@ -388,7 +389,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
               ),
             ),
 
-          // Disclaimer Icon (Top Left)
+          // Disclaimer Icon (Top Left) with Red Dot Badge
           if (!_showConfirmation)
             Positioned(
               top: 0,
@@ -396,17 +397,57 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _showDisclaimer = !_showDisclaimer;
-                      });
-                    },
-                    child: const Icon(
-                      MingCuteIcons.mgc_warning_line,
-                      color: AppColors.textPrimary,
-                      size: 28,
-                    ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          // Mark as viewed when opened
+                          ref
+                              .read(
+                                onboarding
+                                    .disclaimerControllerProvider
+                                    .notifier,
+                              )
+                              .markViewed();
+                          setState(() {
+                            _showDisclaimer = !_showDisclaimer;
+                          });
+                        },
+                        child: const Icon(
+                          MingCuteIcons.mgc_warning_line,
+                          color: AppColors.textPrimary,
+                          size: 28,
+                        ),
+                      ),
+                      // Red dot indicator (only show if not viewed)
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final disclaimerViewed = ref.watch(
+                            onboarding.disclaimerViewedProvider,
+                          );
+                          return disclaimerViewed.when(
+                            data: (hasViewed) {
+                              if (hasViewed) return const SizedBox.shrink();
+                              return Positioned(
+                                top: -2,
+                                right: -2,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.error,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              );
+                            },
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),

@@ -171,7 +171,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
                       child: Text(
-                        'Please wait while our AI is identifying the snake and pulling up information...',
+                        'Please wait while our AI is identifying the snake species and pulling up information...',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',

@@ -53,12 +53,16 @@ class SnakeIdentification {
       dangerSafety: DangerSafety.fromJson(
         json['danger_safety'] as Map<String, dynamic>,
       ),
-      commonQuestions: (json['common_questions'] as List<dynamic>?)
+      commonQuestions:
+          (json['common_questions'] as List<dynamic>?)
               ?.map((e) => CommonQuestion.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      possibleAlternatives: (json['possible_alternatives'] as List<dynamic>?)
-              ?.map((e) => AlternativeSpecies.fromJson(e as Map<String, dynamic>))
+      possibleAlternatives:
+          (json['possible_alternatives'] as List<dynamic>?)
+              ?.map(
+                (e) => AlternativeSpecies.fromJson(e as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       confidence: (json['confidence'] as num).toDouble(),
@@ -77,7 +81,8 @@ class SnakeIdentification {
       'reproduction_info': reproductionInfo.toJson(),
       'danger_safety': dangerSafety.toJson(),
       'common_questions': commonQuestions.map((e) => e.toJson()).toList(),
-      'possible_alternatives': possibleAlternatives.map((e) => e.toJson()).toList(),
+      'possible_alternatives':
+          possibleAlternatives.map((e) => e.toJson()).toList(),
       'confidence': confidence,
     };
   }
@@ -106,7 +111,8 @@ class SnakeIdentification {
     return SnakeIdentification(
       species: species ?? this.species,
       basicInfo: basicInfo ?? this.basicInfo,
-      physicalCharacteristics: physicalCharacteristics ?? this.physicalCharacteristics,
+      physicalCharacteristics:
+          physicalCharacteristics ?? this.physicalCharacteristics,
       specialFeatures: specialFeatures ?? this.specialFeatures,
       additionalInfo: additionalInfo ?? this.additionalInfo,
       habitatLifestyle: habitatLifestyle ?? this.habitatLifestyle,
@@ -172,7 +178,8 @@ class BasicInfo {
     return BasicInfo(
       venomLevel: json['venom_level'] as String? ?? 'Unknown',
       behavior: json['behavior'] as String? ?? 'Unknown',
-      nativeRegions: (json['native_regions'] as List<dynamic>?)
+      nativeRegions:
+          (json['native_regions'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -235,7 +242,14 @@ class PhysicalCharacteristics {
   }
 
   /// Get formatted length range
-  String get formattedLengthRange => '$lengthRangeCm cm';
+  String get formattedLengthRange {
+    final trimmed = lengthRangeCm.trim();
+    // Check if unit is already included
+    if (trimmed.toLowerCase().endsWith('cm')) {
+      return trimmed;
+    }
+    return '$trimmed cm';
+  }
 }
 
 /// Special features of the snake
@@ -260,7 +274,8 @@ class SpecialFeatures {
       usesCamouflage: json['uses_camouflage'] as bool? ?? false,
       hasRattle: json['has_rattle'] as bool? ?? false,
       hissingSound: json['hissing_sound'] as bool? ?? false,
-      defensiveBehaviors: (json['defensive_behaviors'] as List<dynamic>?)
+      defensiveBehaviors:
+          (json['defensive_behaviors'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -298,12 +313,19 @@ class AdditionalInfo {
 
   factory AdditionalInfo.fromJson(Map<String, dynamic> json) {
     return AdditionalInfo(
-      mythAndFolklore: json['myth_and_folklore'] as String? ?? 'No information available',
+      mythAndFolklore:
+          json['myth_and_folklore'] as String? ?? 'No information available',
       nameOrigin: json['name_origin'] as String? ?? 'No information available',
-      adaptationStrategies: json['adaptation_strategies'] as String? ?? 'No information available',
-      ecologicalImportance: json['ecological_importance'] as String? ?? 'No information available',
-      humanInteractions: json['human_interactions'] as String? ?? 'No information available',
-      identifyingTips: (json['identifying_tips'] as List<dynamic>?)
+      adaptationStrategies:
+          json['adaptation_strategies'] as String? ??
+          'No information available',
+      ecologicalImportance:
+          json['ecological_importance'] as String? ??
+          'No information available',
+      humanInteractions:
+          json['human_interactions'] as String? ?? 'No information available',
+      identifyingTips:
+          (json['identifying_tips'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -341,7 +363,8 @@ class HabitatLifestyle {
       habitat: json['habitat'] as String? ?? 'Unknown',
       lifestyle: json['lifestyle'] as String? ?? 'Unknown',
       geographicRange: json['geographic_range'] as String? ?? 'Unknown',
-      preferredEnvironment: json['preferred_environment'] as String? ?? 'Unknown',
+      preferredEnvironment:
+          json['preferred_environment'] as String? ?? 'Unknown',
     );
   }
 
@@ -372,7 +395,8 @@ class DietInfo {
   factory DietInfo.fromJson(Map<String, dynamic> json) {
     return DietInfo(
       huntingStrategy: json['hunting_strategy'] as String? ?? 'Unknown',
-      typicalPrey: (json['typical_prey'] as List<dynamic>?)
+      typicalPrey:
+          (json['typical_prey'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -443,11 +467,13 @@ class DangerSafety {
   factory DangerSafety.fromJson(Map<String, dynamic> json) {
     return DangerSafety(
       dangerLevel: json['danger_level'] as String? ?? 'Unknown',
-      biteSymptoms: (json['bite_symptoms'] as List<dynamic>?)
+      biteSymptoms:
+          (json['bite_symptoms'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
-      safetyTips: (json['safety_tips'] as List<dynamic>?)
+      safetyTips:
+          (json['safety_tips'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
@@ -477,10 +503,7 @@ class CommonQuestion {
   final String question;
   final String answer;
 
-  const CommonQuestion({
-    required this.question,
-    required this.answer,
-  });
+  const CommonQuestion({required this.question, required this.answer});
 
   factory CommonQuestion.fromJson(Map<String, dynamic> json) {
     return CommonQuestion(
@@ -490,10 +513,7 @@ class CommonQuestion {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'question': question,
-      'answer': answer,
-    };
+    return {'question': question, 'answer': answer};
   }
 }
 
@@ -515,7 +535,8 @@ class AlternativeSpecies {
     return AlternativeSpecies(
       commonName: json['common_name'] as String? ?? 'Unknown',
       scientificName: json['scientific_name'] as String? ?? 'Unknown',
-      differentiatingFeatures: json['differentiating_features'] as String? ?? '',
+      differentiatingFeatures:
+          json['differentiating_features'] as String? ?? '',
       dangerLevel: json['danger_level'] as String? ?? 'Unknown',
     );
   }
