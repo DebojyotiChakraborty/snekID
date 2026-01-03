@@ -13,6 +13,8 @@ class HapticButton extends StatefulWidget {
   final EdgeInsets padding;
   final bool enabled;
   final Spring? spring;
+  final bool showGlow;
+  final Color? glowColor;
 
   const HapticButton({
     super.key,
@@ -25,6 +27,8 @@ class HapticButton extends StatefulWidget {
     this.padding = const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
     this.enabled = true,
     this.spring,
+    this.showGlow = false,
+    this.glowColor,
   });
 
   @override
@@ -86,6 +90,17 @@ class _HapticButtonState extends State<HapticButton> {
                 decoration: BoxDecoration(
                   color: widget.enabled ? backgroundColor : _disabledColor(),
                   borderRadius: BorderRadius.circular(widget.borderRadius),
+                  boxShadow:
+                      widget.showGlow && widget.enabled
+                          ? [
+                            BoxShadow(
+                              color: (widget.glowColor ?? backgroundColor)
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ]
+                          : null,
                 ),
                 child: Center(child: child),
               ),

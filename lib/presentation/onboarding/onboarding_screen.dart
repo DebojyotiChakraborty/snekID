@@ -119,6 +119,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   HapticButton(
                     onPressed: _onNextPressed,
                     backgroundColor: const Color(0xFFFEEA53),
+                    showGlow: true,
                     child: Text(
                       currentPage == _totalPages - 1
                           ? AppStrings.continueText
