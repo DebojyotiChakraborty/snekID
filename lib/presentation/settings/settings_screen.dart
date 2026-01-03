@@ -10,6 +10,7 @@ import '../../core/router/app_router.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../common/widgets/animated_dialog.dart';
+import '../common/widgets/cupertino_card.dart';
 
 /// Settings screen with iOS-style design
 class SettingsScreen extends ConsumerWidget {
@@ -52,8 +53,6 @@ class SettingsScreen extends ConsumerWidget {
                 title: AppStrings.theme,
                 value: themeMode.displayName,
                 onTap: () => _showThemeDialog(context, ref, themeMode),
-                isFirst: true,
-                isLast: true,
               ),
             ],
           ),
@@ -68,8 +67,6 @@ class SettingsScreen extends ConsumerWidget {
                 icon: MingCuteIcons.mgc_presentation_2_line,
                 title: AppStrings.viewOnboarding,
                 onTap: () => _viewOnboarding(context, ref),
-                isFirst: true,
-                isLast: true,
               ),
             ],
           ),
@@ -84,10 +81,16 @@ class SettingsScreen extends ConsumerWidget {
                 icon: MingCuteIcons.mgc_information_line,
                 title: AppStrings.appName,
                 value: 'v1.0.0',
-                isFirst: true,
-                isLast: true,
               ),
             ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Developer Section
+          _SettingsGroup(
+            title: 'DEVELOPER',
+            children: const [_DeveloperCard()],
           ),
         ],
       ),
@@ -148,11 +151,12 @@ class _SettingsGroup extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(10),
+        Material(
+          color: context.surfaceColor,
+          shape: const SquircleBorder(
+            radius: BorderRadius.all(Radius.circular(40)),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(children: children),
         ),
       ],
@@ -165,16 +169,12 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final String? value;
   final VoidCallback? onTap;
-  final bool isFirst;
-  final bool isLast;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
     this.value,
     this.onTap,
-    this.isFirst = false,
-    this.isLast = false,
   });
 
   @override
@@ -183,25 +183,13 @@ class _SettingsTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.vertical(
-          top: isFirst ? const Radius.circular(10) : Radius.zero,
-          bottom: isLast ? const Radius.circular(10) : Radius.zero,
-        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              // Icon
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(icon, color: Colors.white, size: 18),
-              ),
-              const SizedBox(width: 12),
+              // Icon without colored box
+              Icon(icon, color: context.textPrimaryColor, size: 24),
+              const SizedBox(width: 16),
 
               // Title
               Expanded(
@@ -230,13 +218,175 @@ class _SettingsTile extends StatelessWidget {
               // Chevron
               Icon(
                 MingCuteIcons.mgc_right_line,
-                color: context.textTertiaryColor.withOpacity(0.5),
+                color: context.textTertiaryColor.withValues(alpha: 0.5),
                 size: 16,
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Developer card showing app creator info
+class _DeveloperCard extends StatelessWidget {
+  const _DeveloperCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Column(
+        children: [
+          // "Built with" heading
+          Text(
+            'Built with',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Icons row: love & Flutter in India
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Love icon
+              _buildIconWithLabel(
+                context,
+                'assets/images/ui_illustrations/love.png',
+                'love',
+              ),
+              const SizedBox(width: 20),
+
+              Container(
+                height: 50,
+                alignment: Alignment.center,
+                child: Text(
+                  '&',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.textTertiaryColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+
+              // Flutter logo
+              _buildIconWithLabel(
+                context,
+                'assets/images/ui_illustrations/flutter_logo.png',
+                'Flutter',
+              ),
+              const SizedBox(width: 20),
+
+              Container(
+                height: 50,
+                alignment: Alignment.center,
+                child: Text(
+                  'in',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.textTertiaryColor,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+
+              // India flag
+              _buildIconWithLabel(
+                context,
+                'assets/images/ui_illustrations/india_flag.png',
+                'India',
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // "by" text
+          Text(
+            'by',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Developer profile image
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              image: const DecorationImage(
+                image: AssetImage(
+                  'assets/images/ui_illustrations/dev_profile.png',
+                ),
+                fit: BoxFit.cover,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Developer name
+          Text(
+            'Debojyoti Chakraborty',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          const SizedBox(height: 2),
+
+          // Developer handle
+          Text(
+            '(pseudo_maverick)',
+            style: TextStyle(fontSize: 12, color: context.textTertiaryColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIconWithLabel(
+    BuildContext context,
+    String assetPath,
+    String label,
+  ) {
+    return Column(
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(
+              image: AssetImage(assetPath),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: context.textTertiaryColor),
+        ),
+      ],
     );
   }
 }

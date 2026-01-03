@@ -40,7 +40,7 @@ class SnakeInfoSections extends StatelessWidget {
                 iconColor: AppColors.info,
               ),
               const SizedBox(height: 12),
-              
+
               // Basic Information
               _InfoSection(
                 title: AppStrings.basicInformation,
@@ -48,38 +48,69 @@ class SnakeInfoSections extends StatelessWidget {
                 iconColor: AppColors.info,
                 items: [
                   _InfoRow(AppStrings.commonName, result.species.commonName),
-                  _InfoRow(AppStrings.scientificName, result.species.scientificName, isItalic: true),
+                  _InfoRow(
+                    AppStrings.scientificName,
+                    result.species.scientificName,
+                    isItalic: true,
+                  ),
                   _InfoRow(AppStrings.snakeType, result.species.snakeType),
                   _InfoRow(AppStrings.venomLevel, result.basicInfo.venomLevel),
                   _InfoRow(AppStrings.behavior, result.basicInfo.behavior),
-                  _InfoRow(AppStrings.nativeRegions, result.basicInfo.nativeRegions.join(', ')),
-                  _InfoRow(AppStrings.activePeriods, result.basicInfo.activePeriods),
+                  _InfoRow(
+                    AppStrings.nativeRegions,
+                    result.basicInfo.nativeRegions.join(', '),
+                  ),
+                  _InfoRow(
+                    AppStrings.activePeriods,
+                    result.basicInfo.activePeriods,
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Characteristics
               _InfoSection(
                 title: AppStrings.characteristics,
                 icon: MingCuteIcons.mgc_ruler_line,
                 iconColor: AppColors.primary,
                 items: [
-                  _InfoRow(AppStrings.colorDescription, result.physicalCharacteristics.colorDescription),
-                  _InfoRow(AppStrings.lengthRange, result.physicalCharacteristics.formattedLengthRange),
-                  _InfoRow(AppStrings.bodyPattern, result.physicalCharacteristics.bodyPattern),
-                  _InfoRow(AppStrings.scaleTexture, result.physicalCharacteristics.scaleTexture),
-                  _InfoRow(AppStrings.headShape, result.physicalCharacteristics.headShape),
-                  _InfoRow(AppStrings.pupilShape, result.physicalCharacteristics.pupilShape),
-                  _InfoRow(AppStrings.tailType, result.physicalCharacteristics.tailType),
+                  _InfoRow(
+                    AppStrings.colorDescription,
+                    result.physicalCharacteristics.colorDescription,
+                  ),
+                  _InfoRow(
+                    AppStrings.lengthRange,
+                    result.physicalCharacteristics.formattedLengthRange,
+                  ),
+                  _InfoRow(
+                    AppStrings.bodyPattern,
+                    result.physicalCharacteristics.bodyPattern,
+                  ),
+                  _InfoRow(
+                    AppStrings.scaleTexture,
+                    result.physicalCharacteristics.scaleTexture,
+                  ),
+                  _InfoRow(
+                    AppStrings.headShape,
+                    result.physicalCharacteristics.headShape,
+                  ),
+                  _InfoRow(
+                    AppStrings.pupilShape,
+                    result.physicalCharacteristics.pupilShape,
+                  ),
+                  _InfoRow(
+                    AppStrings.tailType,
+                    result.physicalCharacteristics.tailType,
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Special Features
               _SpecialFeaturesCard(result: result),
-              
+
               const SizedBox(height: 16),
-              
+
               // Additional Information - Expandable sections
               _ExpandableInfoSection(
                 title: AppStrings.mythAndFolklore,
@@ -88,7 +119,7 @@ class SnakeInfoSections extends StatelessWidget {
                 content: result.additionalInfo.mythAndFolklore,
               ),
               const SizedBox(height: 12),
-              
+
               _ExpandableInfoSection(
                 title: AppStrings.nameOrigin,
                 icon: MingCuteIcons.mgc_translate_line,
@@ -96,7 +127,7 @@ class SnakeInfoSections extends StatelessWidget {
                 content: result.additionalInfo.nameOrigin,
               ),
               const SizedBox(height: 12),
-              
+
               _ExpandableInfoSection(
                 title: AppStrings.adaptationStrategies,
                 icon: MingCuteIcons.mgc_settings_4_line,
@@ -104,7 +135,7 @@ class SnakeInfoSections extends StatelessWidget {
                 content: result.additionalInfo.adaptationStrategies,
               ),
               const SizedBox(height: 12),
-              
+
               _ExpandableInfoSection(
                 title: AppStrings.ecologicalImportance,
                 icon: MingCuteIcons.mgc_leaf_line,
@@ -112,23 +143,27 @@ class SnakeInfoSections extends StatelessWidget {
                 content: result.additionalInfo.ecologicalImportance,
               ),
               const SizedBox(height: 12),
-              
+
               _ExpandableInfoSection(
                 title: AppStrings.humanInteractions,
                 icon: MingCuteIcons.mgc_group_line,
                 iconColor: AppColors.warning,
                 content: result.additionalInfo.humanInteractions,
               ),
-              
+
               if (result.additionalInfo.identifyingTips.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _InfoSection(
                   title: AppStrings.identifyingTips,
                   icon: MingCuteIcons.mgc_search_line,
                   iconColor: AppColors.info,
-                  items: result.additionalInfo.identifyingTips
-                      .map((tip) => _BulletItem(tip, bulletColor: AppColors.info))
-                      .toList(),
+                  items:
+                      result.additionalInfo.identifyingTips
+                          .map(
+                            (tip) =>
+                                _BulletItem(tip, bulletColor: AppColors.info),
+                          )
+                          .toList(),
                 ),
               ],
             ],
@@ -150,7 +185,7 @@ class SnakeInfoSections extends StatelessWidget {
                 iconColor: AppColors.primary,
               ),
               const SizedBox(height: 12),
-              
+
               // Habitat & Lifestyle
               _InfoSection(
                 title: AppStrings.habitatAndLifestyle,
@@ -158,51 +193,85 @@ class SnakeInfoSections extends StatelessWidget {
                 iconColor: AppColors.primary,
                 items: [
                   _InfoRow(AppStrings.habitat, result.habitatLifestyle.habitat),
-                  _InfoRow(AppStrings.lifestyle, result.habitatLifestyle.lifestyle),
-                  _InfoRow(AppStrings.geographicRange, result.habitatLifestyle.geographicRange),
-                  _InfoRow(AppStrings.preferredEnvironment, result.habitatLifestyle.preferredEnvironment),
+                  _InfoRow(
+                    AppStrings.lifestyle,
+                    result.habitatLifestyle.lifestyle,
+                  ),
+                  _InfoRow(
+                    AppStrings.geographicRange,
+                    result.habitatLifestyle.geographicRange,
+                  ),
+                  _InfoRow(
+                    AppStrings.preferredEnvironment,
+                    result.habitatLifestyle.preferredEnvironment,
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Diet & Hunting
               _InfoSection(
                 title: AppStrings.dietAndHunting,
                 icon: MingCuteIcons.mgc_knife_line,
                 iconColor: AppColors.warning,
                 items: [
-                  _InfoRow(AppStrings.huntingStrategy, result.dietInfo.huntingStrategy),
+                  _InfoRow(
+                    AppStrings.huntingStrategy,
+                    result.dietInfo.huntingStrategy,
+                  ),
                   _InfoRow(AppStrings.dietType, result.dietInfo.dietType),
-                  _InfoRow(AppStrings.feedingFrequency, result.dietInfo.feedingFrequency),
+                  _InfoRow(
+                    AppStrings.feedingFrequency,
+                    result.dietInfo.feedingFrequency,
+                  ),
                   if (result.dietInfo.typicalPrey.isNotEmpty)
-                    _InfoRow(AppStrings.typicalPrey, result.dietInfo.typicalPrey.join(', ')),
+                    _InfoRow(
+                      AppStrings.typicalPrey,
+                      result.dietInfo.typicalPrey.join(', '),
+                    ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Reproduction
               _InfoSection(
                 title: AppStrings.reproduction,
                 icon: MingCuteIcons.mgc_egg_crack_line,
                 iconColor: AppColors.success,
                 items: [
-                  _InfoRow(AppStrings.reproductionType, result.reproductionInfo.reproductionType),
-                  _InfoRow(AppStrings.breedingSeason, result.reproductionInfo.breedingSeason),
-                  _InfoRow(AppStrings.clutchSize, result.reproductionInfo.clutchSize),
-                  _InfoRow(AppStrings.gestationPeriod, result.reproductionInfo.gestationPeriod),
-                  _InfoRow(AppStrings.matingBehavior, result.reproductionInfo.matingBehavior),
+                  _InfoRow(
+                    AppStrings.reproductionType,
+                    result.reproductionInfo.reproductionType,
+                  ),
+                  _InfoRow(
+                    AppStrings.breedingSeason,
+                    result.reproductionInfo.breedingSeason,
+                  ),
+                  _InfoRow(
+                    AppStrings.clutchSize,
+                    result.reproductionInfo.clutchSize,
+                  ),
+                  _InfoRow(
+                    AppStrings.gestationPeriod,
+                    result.reproductionInfo.gestationPeriod,
+                  ),
+                  _InfoRow(
+                    AppStrings.matingBehavior,
+                    result.reproductionInfo.matingBehavior,
+                  ),
                 ],
               ),
-              
+
               if (result.specialFeatures.defensiveBehaviors.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _InfoSection(
                   title: AppStrings.defensiveBehaviors,
                   icon: MingCuteIcons.mgc_shield_line,
                   iconColor: AppColors.warning,
-                  items: result.specialFeatures.defensiveBehaviors
-                      .map((b) => _BulletItem(b))
-                      .toList(),
+                  items:
+                      result.specialFeatures.defensiveBehaviors
+                          .map((b) => _BulletItem(b))
+                          .toList(),
                 ),
               ],
             ],
@@ -224,31 +293,38 @@ class SnakeInfoSections extends StatelessWidget {
                 iconColor: AppColors.error,
               ),
               const SizedBox(height: 12),
-              
+
               // Danger Level Card
               _DangerLevelCard(dangerLevel: result.dangerSafety.dangerLevel),
-              
+
               if (result.dangerSafety.biteSymptoms.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _InfoSection(
                   title: AppStrings.biteSymptoms,
                   icon: MingCuteIcons.mgc_warning_line,
                   iconColor: AppColors.error,
-                  items: result.dangerSafety.biteSymptoms
-                      .map((s) => _BulletItem(s, bulletColor: AppColors.error))
-                      .toList(),
+                  items:
+                      result.dangerSafety.biteSymptoms
+                          .map(
+                            (s) => _BulletItem(s, bulletColor: AppColors.error),
+                          )
+                          .toList(),
                 ),
               ],
-              
+
               if (result.dangerSafety.safetyTips.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _InfoSection(
                   title: AppStrings.safetyTips,
                   icon: MingCuteIcons.mgc_safe_shield_2_line,
                   iconColor: AppColors.success,
-                  items: result.dangerSafety.safetyTips
-                      .map((t) => _BulletItem(t, bulletColor: AppColors.success))
-                      .toList(),
+                  items:
+                      result.dangerSafety.safetyTips
+                          .map(
+                            (t) =>
+                                _BulletItem(t, bulletColor: AppColors.success),
+                          )
+                          .toList(),
                 ),
               ],
             ],
@@ -270,13 +346,13 @@ class SnakeInfoSections extends StatelessWidget {
                 iconColor: AppColors.primary,
               ),
               const SizedBox(height: 12),
-              
+
               // Common Questions
               if (result.commonQuestions.isNotEmpty) ...[
                 _QuestionsSection(questions: result.commonQuestions),
                 const SizedBox(height: 16),
               ],
-              
+
               // Possible Alternatives
               if (result.possibleAlternatives.isNotEmpty)
                 _AlternativesSection(alternatives: result.possibleAlternatives),
@@ -308,11 +384,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: iconColor,
-            size: 22,
-          ),
+          Icon(icon, color: iconColor, size: 22),
           const SizedBox(width: 8),
           Text(
             title,
@@ -350,10 +422,7 @@ class _InfoSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
@@ -383,11 +452,7 @@ class _InfoSection extends StatelessWidget {
                     color: iconColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: iconColor, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -407,9 +472,7 @@ class _InfoSection extends StatelessWidget {
           // Content
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              children: items,
-            ),
+            child: Column(children: items),
           ),
         ],
       ),
@@ -445,10 +508,7 @@ class _ExpandableInfoSectionState extends State<_ExpandableInfoSection> {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
@@ -478,11 +538,7 @@ class _ExpandableInfoSectionState extends State<_ExpandableInfoSection> {
                       color: widget.iconColor.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      widget.icon,
-                      color: widget.iconColor,
-                      size: 20,
-                    ),
+                    child: Icon(widget.icon, color: widget.iconColor, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -523,9 +579,10 @@ class _ExpandableInfoSectionState extends State<_ExpandableInfoSection> {
                 ),
               ),
             ),
-            crossFadeState: _isExpanded 
-                ? CrossFadeState.showSecond 
-                : CrossFadeState.showFirst,
+            crossFadeState:
+                _isExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
           ),
         ],
@@ -597,10 +654,7 @@ class _BulletItem extends StatelessWidget {
             margin: const EdgeInsets.only(top: 6),
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -633,10 +687,7 @@ class _SpecialFeaturesCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
@@ -722,10 +773,7 @@ class _FeatureRow extends StatelessWidget {
   final String label;
   final bool value;
 
-  const _FeatureRow({
-    required this.label,
-    required this.value,
-  });
+  const _FeatureRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -737,19 +785,23 @@ class _FeatureRow extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: value
-                  ? AppColors.success.withValues(alpha: 0.15)
-                  : context.surfaceLightColor,
+              color:
+                  value
+                      ? AppColors.success.withValues(alpha: 0.15)
+                      : context.surfaceLightColor,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: value
-                    ? AppColors.success.withValues(alpha: 0.3)
-                    : context.borderColor,
+                color:
+                    value
+                        ? AppColors.success.withValues(alpha: 0.3)
+                        : context.borderColor,
                 width: 1,
               ),
             ),
             child: Icon(
-              value ? MingCuteIcons.mgc_check_fill : MingCuteIcons.mgc_close_fill,
+              value
+                  ? MingCuteIcons.mgc_check_fill
+                  : MingCuteIcons.mgc_close_fill,
               color: value ? AppColors.success : context.textMutedColor,
               size: 16,
             ),
@@ -779,7 +831,9 @@ class _DangerLevelCard extends StatelessWidget {
 
   Color get _color {
     final level = dangerLevel.toLowerCase();
-    if (level.contains('high') || level.contains('deadly') || level.contains('extreme')) {
+    if (level.contains('high') ||
+        level.contains('deadly') ||
+        level.contains('extreme')) {
       return AppColors.dangerHigh;
     }
     if (level.contains('medium') || level.contains('moderate')) {
@@ -793,7 +847,9 @@ class _DangerLevelCard extends StatelessWidget {
 
   IconData get _icon {
     final level = dangerLevel.toLowerCase();
-    if (level.contains('high') || level.contains('deadly') || level.contains('extreme')) {
+    if (level.contains('high') ||
+        level.contains('deadly') ||
+        level.contains('extreme')) {
       return MingCuteIcons.mgc_alert_octagon_fill;
     }
     if (level.contains('medium') || level.contains('moderate')) {
@@ -820,10 +876,7 @@ class _DangerLevelCard extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _color.withValues(alpha: 0.4),
-          width: 1.5,
-        ),
+        border: Border.all(color: _color.withValues(alpha: 0.4), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: _color.withValues(alpha: 0.15),
@@ -840,11 +893,7 @@ class _DangerLevelCard extends StatelessWidget {
               color: _color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              _icon,
-              color: _color,
-              size: 32,
-            ),
+            child: Icon(_icon, color: _color, size: 32),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -892,10 +941,7 @@ class _QuestionsSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
@@ -950,20 +996,18 @@ class _QuestionsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: questions.asMap().entries.map((entry) {
-                final index = entry.key;
-                final question = entry.value;
-                return Column(
-                  children: [
-                    if (index > 0)
-                      Divider(
-                        color: context.borderColor,
-                        height: 24,
-                      ),
-                    _QuestionItem(question: question),
-                  ],
-                );
-              }).toList(),
+              children:
+                  questions.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final question = entry.value;
+                    return Column(
+                      children: [
+                        if (index > 0)
+                          Divider(color: context.borderColor, height: 24),
+                        _QuestionItem(question: question),
+                      ],
+                    );
+                  }).toList(),
             ),
           ),
         ],
@@ -1041,9 +1085,10 @@ class _QuestionItemState extends State<_QuestionItem> {
                 ),
               ),
             ),
-            crossFadeState: _isExpanded 
-                ? CrossFadeState.showSecond 
-                : CrossFadeState.showFirst,
+            crossFadeState:
+                _isExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
           ),
         ],
@@ -1065,10 +1110,7 @@ class _AlternativesSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: context.borderColor, width: 1),
         boxShadow: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
@@ -1123,20 +1165,18 @@ class _AlternativesSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: alternatives.asMap().entries.map((entry) {
-                final index = entry.key;
-                final alternative = entry.value;
-                return Column(
-                  children: [
-                    if (index > 0)
-                      Divider(
-                        color: context.borderColor,
-                        height: 24,
-                      ),
-                    _AlternativeItem(alternative: alternative),
-                  ],
-                );
-              }).toList(),
+              children:
+                  alternatives.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final alternative = entry.value;
+                    return Column(
+                      children: [
+                        if (index > 0)
+                          Divider(color: context.borderColor, height: 24),
+                        _AlternativeItem(alternative: alternative),
+                      ],
+                    );
+                  }).toList(),
             ),
           ),
         ],
