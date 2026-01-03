@@ -19,6 +19,7 @@ import 'widgets/capture_controls.dart';
 import 'widgets/capture_confirmation_dialog.dart';
 import 'widgets/intro_prompt_alert.dart';
 import '../common/widgets/drops.dart';
+import '../common/widgets/info_bubble.dart';
 
 /// Capture screen with camera preview
 class CaptureScreen extends ConsumerStatefulWidget {
@@ -46,6 +47,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   bool _showIntroPrompt = false;
   bool _introPromptChecked = false;
   bool _isRetaking = false;
+
+  // Disclaimer bubble state
+  bool _showDisclaimer = false;
 
   @override
   void initState() {
@@ -380,6 +384,68 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                       size: 28,
                     ),
                   ),
+                ),
+              ),
+            ),
+
+          // Disclaimer Icon (Top Left)
+          if (!_showConfirmation)
+            Positioned(
+              top: 0,
+              left: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showDisclaimer = !_showDisclaimer;
+                      });
+                    },
+                    child: const Icon(
+                      MingCuteIcons.mgc_warning_line,
+                      color: AppColors.textPrimary,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // Tap outside to close disclaimer
+          if (_showDisclaimer && !_showConfirmation)
+            Positioned.fill(
+              key: const ValueKey('disclaimer_tap_blocker'),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _showDisclaimer = false;
+                  });
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+
+          // Disclaimer Info Bubble
+          // We keep it in the tree (but only under !showConfirmation condition) so it can animate out.
+          // The InfoBubble widget itself handles visibility via AnimatedScale/Opacity.
+          if (!_showConfirmation)
+            Positioned(
+              key: const ValueKey('disclaimer_info_bubble'),
+              top: kToolbarHeight + 8, // Adjust based on icon position
+              left: 8,
+              child: SafeArea(
+                child: InfoBubble(
+                  title: 'Disclaimer',
+                  content:
+                      'AI-based identification may be inaccurate. Do not rely solely on this app for safety decisions and consult a professional.',
+                  isVisible: _showDisclaimer,
+                  onClose: () {
+                    setState(() {
+                      _showDisclaimer = false;
+                    });
+                  },
                 ),
               ),
             ),
