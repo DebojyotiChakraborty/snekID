@@ -7,6 +7,7 @@ import '../../core/router/app_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import '../common/widgets/haptic_button.dart';
+import '../common/widgets/page_transition.dart';
 import 'widgets/onboarding_bar_indicator.dart';
 import 'widgets/onboarding_page.dart';
 
@@ -82,19 +83,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ref.read(onboardingPageProvider.notifier).state = index;
                 },
                 children: [
-                  OnboardingPage(
-                    imagePath: _imagePaths[0],
-                    title: AppStrings.onboardingTitle1,
-                    subtitle: AppStrings.onboardingSubtitle1,
+                  PageTransition(
+                    isActive: currentPage == 0,
+                    child: OnboardingPage(
+                      imagePath: _imagePaths[0],
+                      title: AppStrings.onboardingTitle1,
+                      subtitle: AppStrings.onboardingSubtitle1,
+                    ),
                   ),
-                  OnboardingPage(
-                    imagePath: _imagePaths[1],
-                    title: AppStrings.onboardingTitle2,
-                    subtitle: AppStrings.onboardingSubtitle2,
+                  PageTransition(
+                    isActive: currentPage == 1,
+                    child: OnboardingPage(
+                      imagePath: _imagePaths[1],
+                      title: AppStrings.onboardingTitle2,
+                      subtitle: AppStrings.onboardingSubtitle2,
+                    ),
                   ),
-                  OnboardingPage(
-                    imagePath: _imagePaths[2],
-                    title: AppStrings.onboardingTitle3,
+                  PageTransition(
+                    isActive: currentPage == 2,
+                    child: OnboardingPage(
+                      imagePath: _imagePaths[2],
+                      title: AppStrings.onboardingTitle3,
+                    ),
                   ),
                 ],
               ),

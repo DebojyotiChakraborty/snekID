@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,8 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
   late Animation<double> _scanLineAnimation;
   late AnimationController _shrinkController;
   late Animation<double> _shrinkAnimation;
+  late AnimationController _magnifierController;
+  late Animation<double> _magnifierAnimation;
   final ImageService _imageService = ImageService();
   bool _hasNavigated = false;
 
@@ -53,6 +56,16 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
     _shrinkAnimation = CurvedAnimation(
       parent: _shrinkController,
       curve: Curves.easeOutCubic,
+    );
+
+    // Magnifying glass animation that moves in a pattern
+    _magnifierController = AnimationController(
+      duration: const Duration(milliseconds: 3000),
+      vsync: this,
+    )..repeat();
+
+    _magnifierAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _magnifierController, curve: Curves.linear),
     );
 
     // Start shrink after a short delay for smooth entry
@@ -84,6 +97,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
   void dispose() {
     _scanLineController.dispose();
     _shrinkController.dispose();
+    _magnifierController.dispose();
     super.dispose();
   }
 
@@ -154,14 +168,17 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
 
                     const SizedBox(height: 12),
 
-                    Text(
-                      'Our AI is identifying the snake species and pulling information...',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: context.textSecondaryColor,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        'Please wait while our AI is identifying the snake and pulling up information...',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: context.textSecondaryColor,
+                        ),
                       ),
                     ),
 
@@ -173,9 +190,12 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
   }
 
   Widget _buildImageWithScanning() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cornerColor = isDarkMode ? Colors.white : Colors.black;
+
     const double imageSize = 280.0;
-    const double cornerBracketLength = 24.0;
-    const double cornerBracketWidth = 2.0;
+    const double cornerBracketLength = 32.0;
+    const double cornerBracketWidth = 4.0;
     const double cornerBracketGap = 8.0;
     final double containerSize = imageSize + (cornerBracketLength * 2);
     final double imageOffset = cornerBracketLength;
@@ -276,7 +296,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
                       left: 0,
                       right: 0,
                       child: Container(
-                        height: 2,
+                        height: 4,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.centerLeft,
@@ -290,12 +310,54 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.5),
-                              blurRadius: 6,
-                              spreadRadius: 2,
+                              color: AppColors.primary.withValues(alpha: 0.7),
+                              blurRadius: 12,
+                              spreadRadius: 4,
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+
+          // Magnifying glass icon that moves around
+          Positioned(
+            top: imageOffset,
+            left: imageOffset,
+            width: imageSize,
+            height: imageSize,
+            child: AnimatedBuilder(
+              animation: _magnifierAnimation,
+              builder: (context, child) {
+                final t = _magnifierAnimation.value;
+                // Create a figure-8 / lemniscate pattern for smooth movement
+                final double centerX = imageSize / 2;
+                final double centerY = imageSize / 2;
+                final double radiusX = imageSize * 0.3;
+                final double radiusY = imageSize * 0.25;
+
+                // Figure-8 pattern using parametric equations
+                final double angle = t * 2 * math.pi;
+                final double x =
+                    centerX +
+                    radiusX *
+                        math.cos(angle) *
+                        math.sin(angle * 2).abs().clamp(0.3, 1.0);
+                final double y = centerY + radiusY * math.sin(angle * 2);
+
+                return Stack(
+                  children: [
+                    Positioned(
+                      left: x - 16,
+                      top: y - 16,
+                      child: Icon(
+                        MingCuteIcons.mgc_search_line,
+                        color: AppColors.white,
+                        size: 36,
                       ),
                     ),
                   ],
@@ -312,7 +374,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
             child: CustomPaint(
               size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
-                color: AppColors.white,
+                color: cornerColor,
                 strokeWidth: cornerBracketWidth,
                 corner: Corner.topLeft,
                 gap: cornerBracketGap,
@@ -326,7 +388,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
             child: CustomPaint(
               size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
-                color: AppColors.white,
+                color: cornerColor,
                 strokeWidth: cornerBracketWidth,
                 corner: Corner.topRight,
                 gap: cornerBracketGap,
@@ -340,7 +402,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
             child: CustomPaint(
               size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
-                color: AppColors.white,
+                color: cornerColor,
                 strokeWidth: cornerBracketWidth,
                 corner: Corner.bottomLeft,
                 gap: cornerBracketGap,
@@ -354,7 +416,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
             child: CustomPaint(
               size: const Size(cornerBracketLength, cornerBracketLength),
               painter: CornerBracketPainter(
-                color: AppColors.white,
+                color: cornerColor,
                 strokeWidth: cornerBracketWidth,
                 corner: Corner.bottomRight,
                 gap: cornerBracketGap,
@@ -424,116 +486,36 @@ class CornerBracketPainter extends CustomPainter {
           ..color = color
           ..style = PaintingStyle.stroke
           ..strokeWidth = strokeWidth
-          ..strokeCap = StrokeCap.round;
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
 
-    // Dashed pattern
-    paint.strokeWidth = strokeWidth;
-    final dashWidth = 4.0;
-    final dashSpace = 2.0;
+    final path = Path();
 
     switch (corner) {
       case Corner.topLeft:
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(gap, gap),
-          Offset(gap, size.height),
-          dashWidth,
-          dashSpace,
-        );
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(gap, gap),
-          Offset(size.width, gap),
-          dashWidth,
-          dashSpace,
-        );
+        // Draw L-shape: vertical line going down, horizontal line going right
+        path.moveTo(gap, size.height);
+        path.lineTo(gap, gap);
+        path.lineTo(size.width, gap);
         break;
       case Corner.topRight:
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(size.width - gap, gap),
-          Offset(size.width - gap, size.height),
-          dashWidth,
-          dashSpace,
-        );
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(size.width - gap, gap),
-          Offset(0, gap),
-          dashWidth,
-          dashSpace,
-        );
+        // Draw L-shape: horizontal line going left, vertical line going down
+        path.moveTo(0, gap);
+        path.lineTo(size.width - gap, gap);
+        path.lineTo(size.width - gap, size.height);
         break;
       case Corner.bottomLeft:
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(gap, size.height - gap),
-          Offset(gap, 0),
-          dashWidth,
-          dashSpace,
-        );
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(gap, size.height - gap),
-          Offset(size.width, size.height - gap),
-          dashWidth,
-          dashSpace,
-        );
+        // Draw L-shape: vertical line going up, horizontal line going right
+        path.moveTo(gap, 0);
+        path.lineTo(gap, size.height - gap);
+        path.lineTo(size.width, size.height - gap);
         break;
       case Corner.bottomRight:
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(size.width - gap, size.height - gap),
-          Offset(size.width - gap, 0),
-          dashWidth,
-          dashSpace,
-        );
-        _drawDashedLine(
-          canvas,
-          paint,
-          Offset(size.width - gap, size.height - gap),
-          Offset(0, size.height - gap),
-          dashWidth,
-          dashSpace,
-        );
+        // Draw L-shape: horizontal line going left, vertical line going up
+        path.moveTo(0, size.height - gap);
+        path.lineTo(size.width - gap, size.height - gap);
+        path.lineTo(size.width - gap, 0);
         break;
-    }
-  }
-
-  void _drawDashedLine(
-    Canvas canvas,
-    Paint paint,
-    Offset start,
-    Offset end,
-    double dashWidth,
-    double dashSpace,
-  ) {
-    final path = Path();
-    path.moveTo(start.dx, start.dy);
-
-    final distance = (end - start).distance;
-    final direction = (end - start) / distance;
-    double currentDistance = 0;
-
-    while (currentDistance < distance) {
-      final dashEnd =
-          start +
-          direction * (currentDistance + dashWidth).clamp(0.0, distance);
-      path.lineTo(dashEnd.dx, dashEnd.dy);
-      currentDistance += dashWidth + dashSpace;
-      if (currentDistance < distance) {
-        path.moveTo(
-          (start + direction * currentDistance).dx,
-          (start + direction * currentDistance).dy,
-        );
-      }
     }
 
     canvas.drawPath(path, paint);

@@ -13,9 +13,11 @@ import '../../core/constants/app_strings.dart';
 import '../../core/router/app_router.dart';
 import '../../core/services/logger_service.dart';
 import '../../providers/capture_provider.dart';
+import '../../providers/onboarding_provider.dart';
 import 'widgets/camera_frame_overlay.dart';
 import 'widgets/capture_controls.dart';
 import 'widgets/capture_confirmation_dialog.dart';
+import 'widgets/intro_prompt_alert.dart';
 import '../common/widgets/drops.dart';
 
 /// Capture screen with camera preview
@@ -39,6 +41,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   // State for captured image preview
   File? _capturedImage;
   bool _showConfirmation = false;
+
+  // State for first-launch intro prompt
+  bool _showIntroPrompt = false;
+  bool _introPromptChecked = false;
   bool _isRetaking = false;
 
   @override
@@ -95,6 +101,19 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   }
 
   Future<void> _initializeCamera() async {
+    // Check if intro prompt should be shown (first launch)
+    if (!_introPromptChecked) {
+      final introShown = await ref.read(introPromptShownProvider.future);
+      if (!introShown) {
+        setState(() {
+          _showIntroPrompt = true;
+          _introPromptChecked = true;
+        });
+        return; // Don't request camera permission yet
+      }
+      _introPromptChecked = true;
+    }
+
     // Check camera permission
     final status = await Permission.camera.request();
     if (!status.isGranted) {
@@ -215,6 +234,24 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
         _capturedImage = null;
         _isRetaking = false;
       });
+    }
+  }
+
+  void _onIntroContinue() async {
+    // Hide intro prompt with animation
+    setState(() {
+      _showIntroPrompt = false;
+    });
+
+    // Wait for animation to complete
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Mark as shown in preferences
+    await ref.read(introPromptControllerProvider.notifier).markShown();
+
+    // Now initialize camera (which will request permission)
+    if (mounted) {
+      _initializeCamera();
     }
   }
 
@@ -373,6 +410,19 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                 onRetake: _onRetake,
                 onIdentify: _onIdentify,
                 isVisible: _showConfirmation,
+              ),
+            ),
+          ),
+
+          // First-launch intro prompt (Animated)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: IntroPromptAlert(
+                onContinue: _onIntroContinue,
+                isVisible: _showIntroPrompt,
               ),
             ),
           ),
