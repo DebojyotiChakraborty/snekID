@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ming_cute_icons/ming_cute_icons.dart';
+import 'haptic_button.dart';
 
 import '../../../core/constants/app_colors.dart';
 
@@ -291,20 +292,18 @@ class _DialogButtonState extends State<_DialogButton> {
 
 /// Theme picker dialog specifically for settings
 class ThemePickerDialog extends StatefulWidget {
-  final List<String> options;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
   const ThemePickerDialog({
     super.key,
-    required this.options,
     required this.selectedIndex,
     required this.onSelected,
   });
 
   static Future<void> show(
     BuildContext context, {
-    required List<String> options,
+    required List<String> options, // Kept for API compatibility but ignored
     required int selectedIndex,
     required ValueChanged<int> onSelected,
   }) {
@@ -316,7 +315,6 @@ class ThemePickerDialog extends StatefulWidget {
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, animation, secondaryAnimation) {
         return ThemePickerDialog(
-          options: options,
           selectedIndex: selectedIndex,
           onSelected: onSelected,
         );
@@ -345,6 +343,13 @@ class ThemePickerDialog extends StatefulWidget {
 class _ThemePickerDialogState extends State<ThemePickerDialog> {
   late int _selectedIndex;
 
+  // Manual list of options to match the design
+  final List<Map<String, dynamic>> _themeOptions = [
+    {'label': 'Light mode', 'icon': MingCuteIcons.mgc_sun_line},
+    {'label': 'Dark mode', 'icon': MingCuteIcons.mgc_moon_line},
+    {'label': 'System', 'icon': MingCuteIcons.mgc_cellphone_line},
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -352,117 +357,147 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          24,
-          24,
-          24,
-          MediaQuery.of(context).padding.bottom + 24,
-        ),
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(30),
-                blurRadius: 16,
-                spreadRadius: 0,
-                offset: const Offset(0, -4),
+        padding: const EdgeInsets.all(24),
+        child: SafeArea(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(30),
+                    blurRadius: 16,
+                    spreadRadius: 0,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color:
-                      isDark
-                          ? const Color(0xFF2C2C2E).withValues(alpha: 0.85)
-                          : const Color(0xFFE5E5EA).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Options
-                      ...List.generate(widget.options.length, (index) {
-                        final isSelected = index == _selectedIndex;
-                        return GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            setState(() => _selectedIndex = index);
-                            widget.onSelected(index);
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 16,
-                              horizontal: 16,
-                            ),
-                            margin: EdgeInsets.only(
-                              bottom: index < widget.options.length - 1 ? 8 : 0,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  isSelected
-                                      ? AppColors.primary.withValues(alpha: 0.2)
-                                      : (isDark
-                                          ? Colors.white.withValues(alpha: 0.05)
-                                          : Colors.black.withValues(
-                                            alpha: 0.05,
-                                          )),
-                              borderRadius: BorderRadius.circular(12),
-                              border:
-                                  isSelected
-                                      ? Border.all(
-                                        color: AppColors.primary.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                        width: 1.5,
-                                      )
-                                      : null,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    widget.options[index],
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 16,
-                                      fontWeight:
-                                          isSelected
-                                              ? FontWeight.w600
-                                              : FontWeight.w500,
-                                      color:
-                                          isDark ? Colors.white : Colors.black,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                    decoration: BoxDecoration(
+                      color:
+                          isDark
+                              ? const Color(0xFF1C1C1E).withOpacity(0.85)
+                              : const Color(0xFFE5E5EA).withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title
+                        Text(
+                          'App Theme',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Options
+                        ...List.generate(_themeOptions.length, (index) {
+                          final option = _themeOptions[index];
+                          final isSelected = index == _selectedIndex;
+
+                          return GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() => _selectedIndex = index);
+                            },
+                            behavior: HitTestBehavior.opaque,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    option['icon'] as IconData,
+                                    size: 24,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      option['label'] as String,
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            isDark
+                                                ? Colors.white.withOpacity(0.9)
+                                                : Colors.black.withOpacity(0.8),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                if (isSelected)
-                                  Icon(
-                                    MingCuteIcons.mgc_check_circle_fill,
-                                    color: AppColors.primary,
-                                    size: 22,
-                                  ),
-                              ],
+                                  if (isSelected)
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            isDark
+                                                ? Colors.white
+                                                : Colors.black,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color:
+                                            isDark
+                                                ? Colors.black
+                                                : Colors.white,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+
+                        const SizedBox(height: 32),
+
+                        // Continue Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: HapticButton(
+                            onPressed: () {
+                              widget.onSelected(_selectedIndex);
+                              Navigator.of(context).pop();
+                            },
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.black,
+                            borderRadius: 100,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: const Text(
+                              'Continue',
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        );
-                      }),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

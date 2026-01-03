@@ -97,20 +97,23 @@ class _CaptureConfirmationDialogState extends State<CaptureConfirmationDialog>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFE5E5EA).withOpacity(0.85),
+                color:
+                    context.isDarkMode
+                        ? const Color(0xFF1C1C1E).withOpacity(0.85)
+                        : const Color(0xFFE5E5EA).withOpacity(0.85),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Question text
-                  const Text(
+                  Text(
                     AppStrings.identifyQuestion,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: context.textPrimaryColor,
                     ),
                   ),
 
@@ -198,7 +201,9 @@ class _DialogButtonState extends State<_DialogButton> {
             color:
                 widget.isPrimary
                     ? AppColors.primary
-                    : const Color(0xFFB4B4B8), // iOS-style grey
+                    : (context.isDarkMode
+                        ? const Color(0xFF3A3A3C)
+                        : Colors.white),
             borderRadius: BorderRadius.circular(100), // Pill shape
           ),
           child: Center(
@@ -208,7 +213,8 @@ class _DialogButtonState extends State<_DialogButton> {
                 fontFamily: 'Inter',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: widget.isPrimary ? Colors.black : Colors.white,
+                color:
+                    widget.isPrimary ? Colors.black : context.textPrimaryColor,
               ),
             ),
           ),

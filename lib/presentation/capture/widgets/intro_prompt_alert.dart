@@ -92,21 +92,24 @@ class _IntroPromptAlertState extends State<IntroPromptAlert>
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFE5E5EA).withOpacity(0.85),
+                color:
+                    context.isDarkMode
+                        ? const Color(0xFF1C1C1E).withOpacity(0.85)
+                        : const Color(0xFFE5E5EA).withOpacity(0.85),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Prompt text
-                  const Text(
+                  Text(
                     'Take a photo of a snake and I\'ll help you identify it.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: context.textPrimaryColor,
                     ),
                   ),
 
