@@ -112,7 +112,7 @@ class AppTheme {
       ),
 
       // Card theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -195,7 +195,7 @@ class AppTheme {
       ),
 
       // Tab bar theme
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: AppColors.primary,
         unselectedLabelColor: textTertiary,
         indicatorColor: AppColors.primary,
@@ -241,7 +241,7 @@ class AppTheme {
       ),
 
       // Dialog theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titleTextStyle: TextStyle(

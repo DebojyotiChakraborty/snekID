@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 
 import '../../core/constants/app_colors.dart';
