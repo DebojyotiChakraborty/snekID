@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ming_cute_icons/ming_cute_icons.dart';
-import 'haptic_button.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
@@ -448,34 +447,36 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
                       );
                     }),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
-                    // Continue Button
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: HapticButton(
-                          onPressed: () {
-                            widget.onSelected(_selectedIndex);
-                            Navigator.of(context).pop();
-                          },
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.black,
-                          borderRadius: 100,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 48,
-                          ),
-                          child: const Text(
-                            'Continue',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    // Buttons row
+                    Row(
+                      children: [
+                        // Cancel button
+                        Expanded(
+                          child: _DialogButton(
+                            label: 'Cancel',
+                            onPressed: () => Navigator.of(context).pop(),
+                            isPrimary: false,
+                            isDark: isDark,
                           ),
                         ),
-                      ),
+
+                        const SizedBox(width: 12),
+
+                        // Okay button
+                        Expanded(
+                          child: _DialogButton(
+                            label: 'Okay',
+                            onPressed: () {
+                              widget.onSelected(_selectedIndex);
+                              Navigator.of(context).pop();
+                            },
+                            isPrimary: true,
+                            isDark: isDark,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
