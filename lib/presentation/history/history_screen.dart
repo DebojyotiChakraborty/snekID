@@ -13,6 +13,7 @@ import '../../data/models/analysis_history.dart';
 import '../../data/models/snake_identification.dart';
 import '../../providers/history_provider.dart';
 import '../common/widgets/animated_dialog.dart';
+import '../common/widgets/cupertino_card.dart';
 import '../common/widgets/drops.dart';
 
 /// History screen showing past analyses and favorites
@@ -316,125 +317,127 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Dismissible(
-        key: Key(item.id),
-        direction: DismissDirection.endToStart,
-        confirmDismiss: (direction) async {
-          final shouldDelete = await _showDeleteConfirmation(context);
-          if (shouldDelete) {
-            onDelete();
-          }
-          return false; // We handle deletion in the callback
-        },
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          decoration: BoxDecoration(
-            color: AppColors.error,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(
-            MingCuteIcons.mgc_delete_2_line,
-            color: AppColors.white,
-          ),
+    return Dismissible(
+      key: Key(item.id),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        final shouldDelete = await _showDeleteConfirmation(context);
+        if (shouldDelete) {
+          onDelete();
+        }
+        return false; // We handle deletion in the callback
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(40),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              // Image
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(15),
-                  bottomLeft: Radius.circular(15),
-                ),
-                child: SizedBox(width: 90, height: 90, child: _buildImage()),
-              ),
-              // Info
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.commonName,
-                        style: TextStyle(
-                          color: context.textPrimaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        item.scientificName,
-                        style: TextStyle(
-                          color: context.textTertiaryColor,
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          // Danger badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getDangerColor().withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: _getDangerColor().withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Text(
-                              item.dangerLevel,
-                              style: TextStyle(
-                                color: _getDangerColor(),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Confidence
-                          Text(
-                            item.confidencePercentage,
-                            style: TextStyle(
-                              color: context.textTertiaryColor,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const Spacer(),
-                          // Date
-                          Text(
-                            item.formattedDate,
-                            style: TextStyle(
-                              color: context.textMutedColor,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+        child: const Icon(
+          MingCuteIcons.mgc_delete_2_line,
+          color: AppColors.white,
+        ),
+      ),
+      child: CupertinoCard(
+        margin: EdgeInsets.zero,
+        padding: EdgeInsets.zero,
+        color: context.surfaceColor,
+        radius: const BorderRadius.all(Radius.circular(40)),
+        onPressed: onTap,
+        child: Row(
+          children: [
+            // Image
+            ClipPath(
+              clipper: ShapeBorderClipper(
+                shape: const SquircleBorder(
+                  radius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    bottomLeft: Radius.circular(40),
                   ),
                 ),
               ),
-            ],
-          ),
+              child: SizedBox(width: 90, height: 90, child: _buildImage()),
+            ),
+            // Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.commonName,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.scientificName,
+                      style: TextStyle(
+                        color: context.textTertiaryColor,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        // Danger badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getDangerColor().withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: _getDangerColor().withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Text(
+                            item.dangerLevel,
+                            style: TextStyle(
+                              color: _getDangerColor(),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Confidence
+                        Text(
+                          item.confidencePercentage,
+                          style: TextStyle(
+                            color: context.textTertiaryColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Date
+                        Text(
+                          item.formattedDate,
+                          style: TextStyle(
+                            color: context.textMutedColor,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -555,164 +558,162 @@ class _FavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Dismissible(
-        key: Key(item.id),
-        direction: DismissDirection.endToStart,
-        confirmDismiss: (direction) async {
-          final shouldDelete = await _showDeleteConfirmation(context);
-          if (shouldDelete) {
-            onDelete();
-          }
-          return false; // We handle deletion in the callback
-        },
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          decoration: BoxDecoration(
-            color: AppColors.error,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(
-            MingCuteIcons.mgc_delete_2_line,
-            color: AppColors.white,
-          ),
+    return Dismissible(
+      key: Key(item.id),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        final shouldDelete = await _showDeleteConfirmation(context);
+        if (shouldDelete) {
+          onDelete();
+        }
+        return false; // We handle deletion in the callback
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(40),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              // Heart icon with gradient background
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.error.withValues(alpha: 0.2),
-                      AppColors.error.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
-                  ),
+        child: const Icon(
+          MingCuteIcons.mgc_delete_2_line,
+          color: AppColors.white,
+        ),
+      ),
+      child: CupertinoCard(
+        margin: EdgeInsets.zero,
+        padding: EdgeInsets.zero,
+        color: context.surfaceColor,
+        radius: const BorderRadius.all(Radius.circular(40)),
+        onPressed: onTap,
+        child: Row(
+          children: [
+            // Image or star icon with gradient background
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.error.withValues(alpha: 0.2),
+                    AppColors.error.withValues(alpha: 0.1),
+                  ],
                 ),
-                child:
-                    item.imagePath != null
-                        ? ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(15),
-                            bottomLeft: Radius.circular(15),
-                          ),
-                          child: _buildImage(item.imagePath!),
-                        )
-                        : const Center(
-                          child: Icon(
-                            MingCuteIcons.mgc_star_fill,
-                            color: AppColors.error,
-                            size: 36,
-                          ),
-                        ),
               ),
-              // Info
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.commonName,
-                        style: TextStyle(
-                          color: context.textPrimaryColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        item.scientificName,
-                        style: TextStyle(
-                          color: context.textTertiaryColor,
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          // Type badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.infoAccentGreen.withValues(
-                                alpha: 0.15,
-                              ),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              item.snakeType,
-                              style: const TextStyle(
-                                color: AppColors.infoAccentGreen,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
+              child:
+                  item.imagePath != null
+                      ? ClipPath(
+                        clipper: ShapeBorderClipper(
+                          shape: const SquircleBorder(
+                            radius: BorderRadius.only(
+                              topLeft: Radius.circular(40),
+                              bottomLeft: Radius.circular(40),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          // Danger badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _getDangerColor().withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: _getDangerColor().withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Text(
-                              item.dangerLevel,
-                              style: TextStyle(
-                                color: _getDangerColor(),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                        ),
+                        child: _buildImage(item.imagePath!),
+                      )
+                      : const Center(
+                        child: Icon(
+                          MingCuteIcons.mgc_star_fill,
+                          color: AppColors.error,
+                          size: 36,
+                        ),
+                      ),
+            ),
+            // Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.commonName,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.scientificName,
+                      style: TextStyle(
+                        color: context.textTertiaryColor,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        // Type badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
                           ),
-                          const Spacer(),
-                          // Date
-                          Text(
-                            item.formattedDate,
-                            style: TextStyle(
-                              color: context.textMutedColor,
+                          decoration: BoxDecoration(
+                            color: AppColors.infoAccentGreen.withValues(
+                              alpha: 0.15,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            item.snakeType,
+                            style: const TextStyle(
+                              color: AppColors.infoAccentGreen,
                               fontSize: 10,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Danger badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getDangerColor().withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: _getDangerColor().withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Text(
+                            item.dangerLevel,
+                            style: TextStyle(
+                              color: _getDangerColor(),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        // Date
+                        Text(
+                          item.formattedDate,
+                          style: TextStyle(
+                            color: context.textMutedColor,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
