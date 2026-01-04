@@ -16,6 +16,7 @@
 .history
 .svn/
 .swiftpm/
+.github/
 migrate_working_dir/
 
 # IntelliJ related

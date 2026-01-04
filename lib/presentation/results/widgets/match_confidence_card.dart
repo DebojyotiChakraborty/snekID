@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../data/models/snake_identification.dart';
+import '../../common/widgets/cupertino_card.dart';
 
 /// Card showing match confidence
 class MatchConfidenceCard extends StatelessWidget {
@@ -15,87 +16,82 @@ class MatchConfidenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CupertinoCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.borderColor,
-          width: 1,
-        ),
-      ),
+      color: context.surfaceColor,
+      radius: const BorderRadius.all(Radius.circular(40)),
+      borderSide: BorderSide(color: context.borderColor, width: 1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section title
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
+            // Section title
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_outline,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
-                child: const Icon(
-                  Icons.check_circle_outline,
-                  color: AppColors.primary,
-                  size: 20,
+                const SizedBox(width: 12),
+                Text(
+                  AppStrings.mostLikelyMatch,
+                  style: TextStyle(
+                    color: context.textSecondaryColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                AppStrings.mostLikelyMatch,
-                style: TextStyle(
-                  color: context.textSecondaryColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Species name
-          Text(
-            result.species.commonName,
-            style: TextStyle(
-              color: context.textPrimaryColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              ],
             ),
-          ),
 
-          const SizedBox(height: 4),
+            const SizedBox(height: 16),
 
-          // Scientific name
-          Text(
-            result.species.scientificName,
-            style: TextStyle(
-              color: context.textTertiaryColor,
-              fontSize: 14,
-              fontStyle: FontStyle.italic,
+            // Species name
+            Text(
+              result.species.commonName,
+              style: TextStyle(
+                color: context.textPrimaryColor,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 4),
 
-          // Confidence and danger badges
-          Row(
-            children: [
-              // Confidence badge
-              _ConfidenceBadge(confidence: result.confidence),
-              const SizedBox(width: 12),
-              // Danger badge
-              _DangerBadge(dangerLevel: result.dangerSafety.dangerLevel),
-            ],
-          ),
-        ],
-      ),
-    );
+            // Scientific name
+            Text(
+              result.species.scientificName,
+              style: TextStyle(
+                color: context.textTertiaryColor,
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Confidence and danger badges
+            Row(
+              children: [
+                // Confidence badge
+                _ConfidenceBadge(confidence: result.confidence),
+                const SizedBox(width: 12),
+                // Danger badge
+                _DangerBadge(dangerLevel: result.dangerSafety.dangerLevel),
+              ],
+            ),
+          ],
+        ),
+      );
   }
 }
 

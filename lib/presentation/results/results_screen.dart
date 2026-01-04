@@ -15,6 +15,7 @@ import '../../data/services/image_service.dart';
 import '../../data/models/snake_identification.dart';
 // import 'widgets/analysis_loading.dart';
 import '../common/widgets/custom_tab_bar.dart';
+import '../common/widgets/cupertino_card.dart';
 import '../common/widgets/drops.dart';
 import 'widgets/warning_banner.dart';
 
@@ -793,13 +794,11 @@ class _DangerTab extends StatelessWidget {
         children: [
           _SectionTitle(AppStrings.dangerLevel),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
+          CupertinoCard(
+            margin: EdgeInsets.zero,
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: _getDangerColor().withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-            ),
+            color: _getDangerColor().withValues(alpha: 0.12),
+            radius: const BorderRadius.all(Radius.circular(40)),
             child: Row(
               children: [
                 Container(
@@ -943,7 +942,7 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-/// Clean info card without shadows
+/// Clean info card with squircle border
 class _InfoCard extends StatelessWidget {
   final List<Widget> items;
 
@@ -951,13 +950,11 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return CupertinoCard(
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      color: context.surfaceColor,
+      radius: const BorderRadius.all(Radius.circular(40)),
       child: Column(children: items),
     );
   }
@@ -1062,44 +1059,41 @@ class _QuestionCardState extends State<_QuestionCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return CupertinoCard(
+      margin: EdgeInsets.zero,
+      padding: EdgeInsets.zero,
+      color: context.surfaceColor,
+      radius: const BorderRadius.all(Radius.circular(40)),
+      onPressed: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.question.question,
-                      style: TextStyle(
-                        color: context.textPrimaryColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.question.question,
+                    style: TextStyle(
+                      color: context.textPrimaryColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Icon(
-                    _isExpanded
-                        ? MingCuteIcons.mgc_up_line
-                        : MingCuteIcons.mgc_down_line,
-                    color: context.textTertiaryColor,
-                    size: 20,
-                  ),
-                ],
-              ),
+                ),
+                Icon(
+                  _isExpanded
+                      ? MingCuteIcons.mgc_up_line
+                      : MingCuteIcons.mgc_down_line,
+                  color: context.textTertiaryColor,
+                  size: 20,
+                ),
+              ],
             ),
           ),
           if (_isExpanded)
@@ -1128,12 +1122,11 @@ class _AlternativeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CupertinoCard(
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      color: context.surfaceColor,
+      radius: const BorderRadius.all(Radius.circular(40)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

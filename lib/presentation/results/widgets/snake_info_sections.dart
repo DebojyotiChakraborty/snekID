@@ -4,6 +4,7 @@ import 'package:ming_cute_icons/ming_cute_icons.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../data/models/snake_identification.dart';
+import '../../common/widgets/cupertino_card.dart';
 
 /// All snake information sections displayed in a single scrollable view
 class SnakeInfoSections extends StatelessWidget {
@@ -417,13 +418,17 @@ class _InfoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = SquircleBorder(
+      radius: const BorderRadius.all(Radius.circular(40)),
+      side: BorderSide(color: context.borderColor, width: 1),
+    );
+
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.borderColor, width: 1),
-        boxShadow: [
+        shape: shape,
+        shadows: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
@@ -431,50 +436,49 @@ class _InfoSection extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with icon
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with icon
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.08),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: iconColor, size: 20),
                   ),
-                  child: Icon(icon, color: iconColor, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: context.textPrimaryColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(children: items),
-          ),
-        ],
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(children: items),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -503,13 +507,17 @@ class _ExpandableInfoSectionState extends State<_ExpandableInfoSection> {
 
   @override
   Widget build(BuildContext context) {
+    final shape = SquircleBorder(
+      radius: const BorderRadius.all(Radius.circular(40)),
+      side: BorderSide(color: context.borderColor, width: 1),
+    );
+
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.borderColor, width: 1),
-        boxShadow: [
+        shape: shape,
+        shadows: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
@@ -517,75 +525,80 @@ class _ExpandableInfoSectionState extends State<_ExpandableInfoSection> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Tappable header
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: widget.iconColor.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
+      child: Material(
+        color: Colors.transparent,
+        shape: shape,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Tappable header
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              customBorder: shape,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: widget.iconColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(widget.icon, color: widget.iconColor, size: 20),
                     ),
-                    child: Icon(widget.icon, color: widget.iconColor, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.title,
-                      style: TextStyle(
-                        color: context.textPrimaryColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.3,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: TextStyle(
+                          color: context.textPrimaryColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.3,
+                        ),
                       ),
                     ),
-                  ),
-                  AnimatedRotation(
-                    turns: _isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      MingCuteIcons.mgc_down_line,
-                      color: context.textTertiaryColor,
-                      size: 20,
+                    AnimatedRotation(
+                      turns: _isExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        MingCuteIcons.mgc_down_line,
+                        color: context.textTertiaryColor,
+                        size: 20,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Expandable content
-          AnimatedCrossFade(
-            firstChild: const SizedBox(width: double.infinity),
-            secondChild: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Text(
-                widget.content,
-                style: TextStyle(
-                  color: context.textSecondaryColor,
-                  fontSize: 14,
-                  height: 1.5,
+                  ],
                 ),
               ),
             ),
-            crossFadeState:
-                _isExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
-          ),
-        ],
+            // Expandable content
+            AnimatedCrossFade(
+              firstChild: const SizedBox(width: double.infinity),
+              secondChild: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Text(
+                  widget.content,
+                  style: TextStyle(
+                    color: context.textSecondaryColor,
+                    fontSize: 14,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              crossFadeState:
+                  _isExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -682,13 +695,17 @@ class _SpecialFeaturesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = SquircleBorder(
+      radius: const BorderRadius.all(Radius.circular(40)),
+      side: BorderSide(color: context.borderColor, width: 1),
+    );
+
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.borderColor, width: 1),
-        boxShadow: [
+        shape: shape,
+        shadows: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
@@ -696,73 +713,72 @@ class _SpecialFeaturesCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    MingCuteIcons.mgc_sparkles_2_line,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    AppStrings.specialFeatures,
-                    style: TextStyle(
-                      color: context.textPrimaryColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      MingCuteIcons.mgc_sparkles_2_line,
+                      color: AppColors.primary,
+                      size: 20,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppStrings.specialFeatures,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Features grid
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _FeatureRow(
-                  label: AppStrings.mimicSpecies,
-                  value: result.specialFeatures.isMimicSpecies,
-                ),
-                _FeatureRow(
-                  label: AppStrings.usesCamouflage,
-                  value: result.specialFeatures.usesCamouflage,
-                ),
-                _FeatureRow(
-                  label: AppStrings.hasRattle,
-                  value: result.specialFeatures.hasRattle,
-                ),
-                _FeatureRow(
-                  label: AppStrings.hissingSound,
-                  value: result.specialFeatures.hissingSound,
-                ),
-              ],
+            // Features grid
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _FeatureRow(
+                    label: AppStrings.mimicSpecies,
+                    value: result.specialFeatures.isMimicSpecies,
+                  ),
+                  _FeatureRow(
+                    label: AppStrings.usesCamouflage,
+                    value: result.specialFeatures.usesCamouflage,
+                  ),
+                  _FeatureRow(
+                    label: AppStrings.hasRattle,
+                    value: result.specialFeatures.hasRattle,
+                  ),
+                  _FeatureRow(
+                    label: AppStrings.hissingSound,
+                    value: result.specialFeatures.hissingSound,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -863,10 +879,14 @@ class _DangerLevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = SquircleBorder(
+      radius: const BorderRadius.all(Radius.circular(40)),
+      side: BorderSide(color: _color.withValues(alpha: 0.4), width: 1.5),
+    );
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -875,9 +895,8 @@ class _DangerLevelCard extends StatelessWidget {
             _color.withValues(alpha: 0.08),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _color.withValues(alpha: 0.4), width: 1.5),
-        boxShadow: [
+        shape: shape,
+        shadows: [
           BoxShadow(
             color: _color.withValues(alpha: 0.15),
             blurRadius: 12,
@@ -885,44 +904,47 @@ class _DangerLevelCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: _color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _color.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(_icon, color: _color, size: 32),
             ),
-            child: Icon(_icon, color: _color, size: 32),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.dangerLevel,
-                  style: TextStyle(
-                    color: context.textTertiaryColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.5,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppStrings.dangerLevel,
+                    style: TextStyle(
+                      color: context.textTertiaryColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  dangerLevel,
-                  style: TextStyle(
-                    color: _color,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
+                  const SizedBox(height: 4),
+                  Text(
+                    dangerLevel,
+                    style: TextStyle(
+                      color: _color,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -936,13 +958,17 @@ class _QuestionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = SquircleBorder(
+      radius: const BorderRadius.all(Radius.circular(40)),
+      side: BorderSide(color: context.borderColor, width: 1),
+    );
+
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.borderColor, width: 1),
-        boxShadow: [
+        shape: shape,
+        shadows: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
@@ -950,67 +976,66 @@ class _QuestionsSection extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.info.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.info.withValues(alpha: 0.08),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.info.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    MingCuteIcons.mgc_question_line,
-                    color: AppColors.info,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    AppStrings.commonQuestions,
-                    style: TextStyle(
-                      color: context.textPrimaryColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.info.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      MingCuteIcons.mgc_question_line,
+                      color: AppColors.info,
+                      size: 20,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppStrings.commonQuestions,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Questions
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children:
-                  questions.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final question = entry.value;
-                    return Column(
-                      children: [
-                        if (index > 0)
-                          Divider(color: context.borderColor, height: 24),
-                        _QuestionItem(question: question),
-                      ],
-                    );
-                  }).toList(),
+            // Questions
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children:
+                    questions.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final question = entry.value;
+                      return Column(
+                        children: [
+                          if (index > 0)
+                            Divider(color: context.borderColor, height: 24),
+                          _QuestionItem(question: question),
+                        ],
+                      );
+                    }).toList(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1105,13 +1130,17 @@ class _AlternativesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shape = SquircleBorder(
+      radius: const BorderRadius.all(Radius.circular(40)),
+      side: BorderSide(color: context.borderColor, width: 1),
+    );
+
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(
         color: context.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.borderColor, width: 1),
-        boxShadow: [
+        shape: shape,
+        shadows: [
           BoxShadow(
             color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 10,
@@ -1119,67 +1148,66 @@ class _AlternativesSection extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.08),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.08),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.warning.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    MingCuteIcons.mgc_transfer_line,
-                    color: AppColors.warning,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    AppStrings.possibleAlternatives,
-                    style: TextStyle(
-                      color: context.textPrimaryColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.3,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      MingCuteIcons.mgc_transfer_line,
+                      color: AppColors.warning,
+                      size: 20,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppStrings.possibleAlternatives,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Alternatives
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children:
-                  alternatives.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final alternative = entry.value;
-                    return Column(
-                      children: [
-                        if (index > 0)
-                          Divider(color: context.borderColor, height: 24),
-                        _AlternativeItem(alternative: alternative),
-                      ],
-                    );
-                  }).toList(),
+            // Alternatives
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children:
+                    alternatives.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final alternative = entry.value;
+                      return Column(
+                        children: [
+                          if (index > 0)
+                            Divider(color: context.borderColor, height: 24),
+                          _AlternativeItem(alternative: alternative),
+                        ],
+                      );
+                    }).toList(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

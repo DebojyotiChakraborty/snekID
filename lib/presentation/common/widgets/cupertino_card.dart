@@ -114,6 +114,11 @@ class CupertinoCard extends StatelessWidget {
   /// The border radius of the squircle corners.
   final BorderRadius radius;
 
+  /// Optional border side for the squircle.
+  ///
+  /// Defaults to [BorderSide.none].
+  final BorderSide borderSide;
+
   /// Optional decoration for the card.
   final Decoration? decoration;
 
@@ -130,12 +135,13 @@ class CupertinoCard extends StatelessWidget {
     this.splashColor,
     this.decoration,
     this.radius = const BorderRadius.all(Radius.circular(20.0)),
+    this.borderSide = BorderSide.none,
     this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final shapeBorder = SquircleBorder(radius: radius);
+    final shapeBorder = SquircleBorder(radius: radius, side: borderSide);
 
     return Padding(
       padding: margin,
