@@ -43,6 +43,12 @@
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>Allow Flutter tools to connect to your device for debugging.</string>
+		<key>NSBonjourServices</key>
+		<array>
+			<string>_dartobservatory._tcp</string>
+		</array>
 		<!-- Camera permissions -->
 		<key>NSCameraUsageDescription</key>
 		<string>SnekID needs camera access to capture photos of snakes for identification.</string>
