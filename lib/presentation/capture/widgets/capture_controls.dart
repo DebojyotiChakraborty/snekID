@@ -54,7 +54,7 @@ class CaptureControls extends StatelessWidget {
               children: [
                 // Gallery button
                 _ControlButton(
-                  icon: MingCuteIcons.mgc_pic_line,
+                  icon: MingCuteIcons.mgc_photo_album_2_line,
                   onPressed: onGallery,
                   size: 48,
                 ),
@@ -67,7 +67,7 @@ class CaptureControls extends StatelessWidget {
 
                 // History button
                 _ControlButton(
-                  icon: MingCuteIcons.mgc_time_line,
+                  icon: MingCuteIcons.mgc_history_anticlockwise_line,
                   onPressed: onHistory,
                   size: 48,
                 ),

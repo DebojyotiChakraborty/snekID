@@ -1,10 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ming_cute_icons/ming_cute_icons.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_strings.dart';
@@ -157,6 +161,69 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
     }
   }
 
+  Future<void> _shareResult([Rect? sharePositionOrigin]) async {
+    final image = ref.read(selectedImageProvider);
+    final result = ref.read(identificationProvider).valueOrNull;
+
+    if (image == null || result == null) return;
+
+    try {
+      // Build the share text
+      final shareText = '''
+${result.species.commonName}
+
+Identified with the SnekID - Snake Identifier app. Try for free : ${AppStrings.appStoreLink}
+''';
+
+      // Share the image with text
+      await Share.shareXFiles(
+        [XFile(image.path)],
+        text: shareText,
+        sharePositionOrigin: sharePositionOrigin,
+      );
+    } catch (e) {
+      debugPrint('Error sharing: $e');
+      // Optionally show an error message to the user
+      if (mounted) {
+        Drops.show(
+          context,
+          title: 'Failed to share',
+          backgroundColor: AppColors.error,
+          position: DropPosition.bottom,
+          icon: MingCuteIcons.mgc_warning_line,
+          iconColor: AppColors.white,
+          titleTextStyle: const TextStyle(
+            color: AppColors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      }
+    }
+  }
+
+  Rect? _getButtonPosition(BuildContext buttonContext) {
+    try {
+      final RenderBox? buttonBox = buttonContext.findRenderObject() as RenderBox?;
+      if (buttonBox != null && buttonBox.attached) {
+        final RenderBox? overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
+        if (overlay != null && overlay.attached) {
+          final Offset buttonPosition = buttonBox.localToGlobal(Offset.zero);
+          final Size buttonSize = buttonBox.size;
+          return Rect.fromLTWH(
+            buttonPosition.dx,
+            buttonPosition.dy,
+            buttonSize.width,
+            buttonSize.height,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting button position: $e');
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedImage = ref.watch(selectedImageProvider);
@@ -214,21 +281,33 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                       onPressed: _onClose,
                     ),
                     actions: [
-                      IconButton(
-                        icon: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.4),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            MingCuteIcons.mgc_more_2_fill,
-                            color: Colors.white,
+                      Builder(
+                        builder: (buttonContext) => PullDownButton(
+                          itemBuilder: (context) => [
+                            PullDownMenuItem(
+                              onTap: () {
+                                final sharePositionOrigin = _getButtonPosition(buttonContext);
+                                _shareResult(sharePositionOrigin);
+                              },
+                              title: AppStrings.share,
+                              icon: CupertinoIcons.share,
+                            ),
+                          ],
+                          buttonBuilder: (context, showMenu) => IconButton(
+                            icon: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.4),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                MingCuteIcons.mgc_more_2_fill,
+                                color: Colors.white,
+                              ),
+                            ),
+                            onPressed: showMenu,
                           ),
                         ),
-                        onPressed: () {
-                          // TODO: Show menu
-                        },
                       ),
                     ],
                     flexibleSpace: FlexibleSpaceBar(

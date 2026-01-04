@@ -207,4 +207,8 @@ class AppStrings {
   static const String about = 'About';
   static const String version = 'Version';
   static const String appDescription = 'Snake identification powered by AI';
+
+  // Share
+  static const String share = 'Share';
+  static const String appStoreLink = 'https://apps.apple.com/app/snekid'; // Update with actual app store link when available
 }

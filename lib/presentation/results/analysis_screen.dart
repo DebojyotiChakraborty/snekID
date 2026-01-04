@@ -345,7 +345,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
                       left: x - 16,
                       top: y - 16,
                       child: Icon(
-                        MingCuteIcons.mgc_search_line,
+                        MingCuteIcons.mgc_search_ai_line,
                         color: AppColors.white,
                         size: 36,
                       ),
