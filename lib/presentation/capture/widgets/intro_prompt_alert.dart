@@ -98,7 +98,7 @@ class _IntroPromptAlertState extends State<IntroPromptAlert>
                 children: [
                   // Prompt text
                   Text(
-                    'Take a photo of a snake and I\'ll help you identify it.',
+                    'Take a photo of a snake and SnakeID will help you identify it.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Inter',

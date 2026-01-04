@@ -113,7 +113,7 @@ class _AnimatedDialogState extends State<AnimatedDialog> {
               decoration: BoxDecoration(
                 color:
                     isDark
-                        ? const Color(0xFF2C2C2E).withValues(alpha: 0.85)
+                        ? const Color(0xFF1C1C1E).withValues(alpha: 0.85)
                         : const Color(0xFFE5E5EA).withValues(alpha: 0.85),
               ),
               child: Material(
@@ -339,8 +339,8 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
   // Manual list of options to match the design
   final List<Map<String, dynamic>> _themeOptions = [
     {'label': 'Light mode', 'icon': MingCuteIcons.mgc_sun_line},
-    {'label': 'Dark mode', 'icon': MingCuteIcons.mgc_moon_line},
-    {'label': 'System', 'icon': MingCuteIcons.mgc_cellphone_line},
+    {'label': 'Dark mode', 'icon': MingCuteIcons.mgc_moon_stars_line},
+    {'label': 'System', 'icon': MingCuteIcons.mgc_cellphone_2_line},
   ];
 
   @override
@@ -356,39 +356,47 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: SafeArea(
-          child: Material(
-            color: Colors.transparent,
-            shape: const SquircleBorder(
-              radius: BorderRadius.all(
-                Radius.circular(AppConstants.alertBorderRadius),
-              ),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          MediaQuery.of(context).padding.bottom + 24,
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const SquircleBorder(
+            radius: BorderRadius.all(
+              Radius.circular(AppConstants.alertBorderRadius),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                decoration: BoxDecoration(
-                  color:
-                      isDark
-                          ? const Color(0xFF1C1C1E).withOpacity(0.85)
-                          : const Color(0xFFE5E5EA).withOpacity(0.85),
-                ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              decoration: BoxDecoration(
+                color:
+                    isDark
+                        ? const Color(0xFF1C1C1E).withValues(alpha: 0.85)
+                        : const Color(0xFFE5E5EA).withValues(alpha: 0.85),
+              ),
+              child: Material(
+                type: MaterialType.transparency,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Title
-                    Text(
-                      'App Theme',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : Colors.black,
+                    Center(
+                      child: Text(
+                        'App Theme',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -405,13 +413,16 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
                         },
                         behavior: HitTestBehavior.opaque,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
                           child: Row(
                             children: [
                               Icon(
                                 option['icon'] as IconData,
                                 size: 24,
-                                color: isDark ? Colors.white : Colors.black,
+                                color: context.textSecondaryColor,
                               ),
                               const SizedBox(width: 16),
                               Expanded(
@@ -420,27 +431,16 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
                                   style: TextStyle(
                                     fontFamily: 'Inter',
                                     fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        isDark
-                                            ? Colors.white.withOpacity(0.9)
-                                            : Colors.black.withOpacity(0.8),
+                                    fontWeight: FontWeight.w500,
+                                    color: context.textSecondaryColor,
                                   ),
                                 ),
                               ),
                               if (isSelected)
-                                Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: isDark ? Colors.white : Colors.black,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.check,
-                                    size: 16,
-                                    color: isDark ? Colors.black : Colors.white,
-                                  ),
+                                Icon(
+                                  MingCuteIcons.mgc_check_circle_fill,
+                                  size: 24,
+                                  color: context.textSecondaryColor,
                                 ),
                             ],
                           ),
@@ -451,23 +451,28 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
                     const SizedBox(height: 32),
 
                     // Continue Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: HapticButton(
-                        onPressed: () {
-                          widget.onSelected(_selectedIndex);
-                          Navigator.of(context).pop();
-                        },
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.black,
-                        borderRadius: 100,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: const Text(
-                          'Continue',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: HapticButton(
+                          onPressed: () {
+                            widget.onSelected(_selectedIndex);
+                            Navigator.of(context).pop();
+                          },
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.black,
+                          borderRadius: 100,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 48,
+                          ),
+                          child: const Text(
+                            'Continue',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),

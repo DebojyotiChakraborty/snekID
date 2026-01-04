@@ -6,11 +6,7 @@ class CustomTabBar extends StatelessWidget {
   final TabController controller;
   final List<String> tabs;
 
-  const CustomTabBar({
-    super.key,
-    required this.controller,
-    required this.tabs,
-  });
+  const CustomTabBar({super.key, required this.controller, required this.tabs});
 
   @override
   Widget build(BuildContext context) {
@@ -18,15 +14,16 @@ class CustomTabBar extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: context.isDarkMode
-            ? AppColors.surfaceLightDark
-            : AppColors.surfaceLightLight,
+        color:
+            context.isDarkMode
+                ? AppColors.surfaceLightDark
+                : AppColors.surfaceLightLight,
         borderRadius: BorderRadius.circular(100),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final tabWidth = constraints.maxWidth / tabs.length;
-          
+
           return AnimatedBuilder(
             animation: controller.animation!,
             builder: (context, child) {
@@ -54,7 +51,7 @@ class CustomTabBar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   // Text Labels
                   Row(
                     children: List.generate(tabs.length, (index) {
@@ -63,7 +60,7 @@ class CustomTabBar extends StatelessWidget {
                       // Simple approach: Using AnimatedBuilder to rebuild is enough?
                       // We can check controller.animation.value to animate text color seamlessly?
                       // But effectively standard text color transition is fine.
-                      
+
                       return SizedBox(
                         width: tabWidth,
                         child: Center(
@@ -80,7 +77,7 @@ class CustomTabBar extends StatelessWidget {
                       );
                     }),
                   ),
-                  
+
                   // Invisible Tappable Area
                   Row(
                     children: List.generate(tabs.length, (index) {
@@ -105,15 +102,15 @@ class CustomTabBar extends StatelessWidget {
   }
 
   Color _getTextColor(BuildContext context, int index) {
-     // Identify animation value
-     final double animValue = controller.animation!.value;
-     // simple logic: if closer to index than 0.5, use primary, else tertiary
-     final double diff = (animValue - index).abs();
-     
-     if (diff < 0.5) {
-       return context.textPrimaryColor;
-     } else {
-       return context.textTertiaryColor;
-     }
+    // Identify animation value
+    final double animValue = controller.animation!.value;
+    // simple logic: if closer to index than 0.5, use primary, else tertiary
+    final double diff = (animValue - index).abs();
+
+    if (diff < 0.5) {
+      return context.textPrimaryColor;
+    } else {
+      return context.textTertiaryColor;
+    }
   }
 }

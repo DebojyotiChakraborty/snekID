@@ -15,6 +15,7 @@ import '../../providers/history_provider.dart';
 import '../common/widgets/animated_dialog.dart';
 import '../common/widgets/cupertino_card.dart';
 import '../common/widgets/drops.dart';
+import '../common/widgets/page_transition.dart';
 
 /// History screen showing past analyses and favorites
 class HistoryScreen extends ConsumerStatefulWidget {
@@ -217,32 +218,34 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // History tab
-          _HistoryList(
-            history: history,
-            onDelete: (id) {
-              HapticFeedback.mediumImpact();
-              ref.read(historyProvider.notifier).deleteAnalysis(id);
-            },
-            onTap:
-                (item) =>
-                    _navigateToResult(item.fullResultJson, item.imagePath),
-          ),
-          // Favorites tab
-          _FavoritesList(
-            favorites: favorites,
-            onDelete: (id) {
-              HapticFeedback.mediumImpact();
-              ref.read(favoritesProvider.notifier).removeFavorite(id);
-            },
-            onTap:
-                (item) =>
-                    _navigateToResult(item.fullResultJson, item.imagePath),
-          ),
-        ],
+      body: ScreenPageTransition(
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            // History tab
+            _HistoryList(
+              history: history,
+              onDelete: (id) {
+                HapticFeedback.mediumImpact();
+                ref.read(historyProvider.notifier).deleteAnalysis(id);
+              },
+              onTap:
+                  (item) =>
+                      _navigateToResult(item.fullResultJson, item.imagePath),
+            ),
+            // Favorites tab
+            _FavoritesList(
+              favorites: favorites,
+              onDelete: (id) {
+                HapticFeedback.mediumImpact();
+                ref.read(favoritesProvider.notifier).removeFavorite(id);
+              },
+              onTap:
+                  (item) =>
+                      _navigateToResult(item.fullResultJson, item.imagePath),
+            ),
+          ],
+        ),
       ),
     );
   }

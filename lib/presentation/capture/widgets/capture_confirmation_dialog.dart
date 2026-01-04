@@ -104,6 +104,7 @@ class _CaptureConfirmationDialogState extends State<CaptureConfirmationDialog>
                   // Question text
                   Text(
                     AppStrings.identifyQuestion,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 18,

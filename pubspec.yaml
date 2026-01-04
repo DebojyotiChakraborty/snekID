@@ -45,6 +45,7 @@ dependencies:
   ming_cute_icons: ^0.0.7
   audioplayers: ^6.5.1
   flutter_animate: ^4.5.2
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,7 @@ dev_dependencies:
   hive_generator: ^2.0.1
   build_runner: ^2.4.13
   riverpod_generator: ^2.6.2
+  flutter_native_splash: ^2.4.6
 
 flutter:
   uses-material-design: true
@@ -73,3 +75,12 @@ flutter:
           weight: 600
         - asset: assets/fonts/Inter-Black.ttf
           weight: 900
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: assets/images/app_icon/splash_image.png
+  android_12:
+    image: assets/images/app_icon/splash_image.png
+    color: "#FFFFFF"
+  ios: true
+  android: true

@@ -17,6 +17,7 @@ import '../../data/models/snake_identification.dart';
 import '../common/widgets/custom_tab_bar.dart';
 import '../common/widgets/cupertino_card.dart';
 import '../common/widgets/drops.dart';
+import '../common/widgets/page_transition.dart';
 import 'widgets/warning_banner.dart';
 
 /// Results screen showing snake identification
@@ -190,29 +191,15 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
             isFavoriteProvider(result.species.commonName),
           );
 
-          return NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverAppBar(
-                  expandedHeight: 400.0,
-                  pinned: true,
-                  backgroundColor: context.backgroundColor,
-                  leading: IconButton(
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        MingCuteIcons.mgc_left_line,
-                        color: Colors.white,
-                      ),
-                    ),
-                    onPressed: _onClose,
-                  ),
-                  actions: [
-                    IconButton(
+          return ScreenPageTransition(
+            child: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  SliverAppBar(
+                    expandedHeight: 400.0,
+                    pinned: true,
+                    backgroundColor: context.backgroundColor,
+                    leading: IconButton(
                       icon: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -220,154 +207,170 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen>
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          MingCuteIcons.mgc_more_2_fill,
+                          MingCuteIcons.mgc_left_line,
                           color: Colors.white,
                         ),
                       ),
-                      onPressed: () {
-                        // TODO: Show menu
-                      },
+                      onPressed: _onClose,
                     ),
-                  ],
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Stack(
-                      fit: StackFit.expand,
+                    actions: [
+                      IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            MingCuteIcons.mgc_more_2_fill,
+                            color: Colors.white,
+                          ),
+                        ),
+                        onPressed: () {
+                          // TODO: Show menu
+                        },
+                      ),
+                    ],
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Image
+                          selectedImage != null
+                              ? Hero(
+                                tag: 'snake_image',
+                                child: Image.file(
+                                  selectedImage,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                              : Container(
+                                color: context.surfaceLightColor,
+                                child: Icon(
+                                  MingCuteIcons.mgc_pic_line,
+                                  size: 64,
+                                  color: context.textMutedColor,
+                                ),
+                              ),
+
+                          // Gradient Overlay
+                          Positioned.fill(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    // Top scrim for status bar/buttons
+                                    Colors.black.withOpacity(0.4),
+                                    Colors.transparent,
+                                    // Bottom fade to background
+                                    context.backgroundColor.withOpacity(0.0),
+                                    context.backgroundColor,
+                                  ],
+                                  stops: const [0.0, 0.2, 0.6, 1.0],
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Snake Info Overlay
+                          Positioned(
+                            left: 16,
+                            right: 16,
+                            bottom: 24,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  result.species.commonName,
+                                  style: TextStyle(
+                                    color: context.textPrimaryColor,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.5,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  result.species.scientificName,
+                                  style: TextStyle(
+                                    color: context.textSecondaryColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Column(
                       children: [
-                        // Image
-                        selectedImage != null
-                            ? Hero(
-                              tag: 'snake_image',
-                              child: Image.file(
-                                selectedImage,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : Container(
-                              color: context.surfaceLightColor,
-                              child: Icon(
-                                MingCuteIcons.mgc_pic_line,
-                                size: 64,
-                                color: context.textMutedColor,
-                              ),
-                            ),
+                        // Badges
+                        _SnakeBadges(result: result),
 
-                        // Gradient Overlay
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  // Top scrim for status bar/buttons
-                                  Colors.black.withOpacity(0.4),
-                                  Colors.transparent,
-                                  // Bottom fade to background
-                                  context.backgroundColor.withOpacity(0.0),
-                                  context.backgroundColor,
-                                ],
-                                stops: const [0.0, 0.2, 0.6, 1.0],
-                              ),
-                            ),
-                          ),
-                        ),
+                        // Warning Banner
+                        if (showWarning) const WarningBanner(),
 
-                        // Snake Info Overlay
-                        Positioned(
-                          left: 16,
-                          right: 16,
-                          bottom: 24,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                result.species.commonName,
-                                style: TextStyle(
-                                  color: context.textPrimaryColor,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                  height: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                result.species.scientificName,
-                                style: TextStyle(
-                                  color: context.textSecondaryColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Match Confidence (Simplified or kept as is if informative)
+                        // We can keep it but maybe we don't need the header parts inside it?
+                        // For now, let's keep it as is, but it might be redundant.
+                        // Let's hide it if it's too redundant, but it has the percentage.
+                        // Maybe we can create a simpler version or just keep it.
+                        // MatchConfidenceCard(result: result),
+                        // Actually, the user's screenshot doesn't seem to show the confidence card in the middle.
+                        // I will omit it for now to match "this layout" closer, or maybe it's below?
+                        // The prompt says "entire page should be scrollable... not just the card part".
+                        // The previous card part was likely the MatchConfidenceCard.
+                        // I'll leave it out as the header now contains the main info.
                       ],
                     ),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: Column(
+                  SliverPersistentHeader(
+                    delegate: _SliverAppBarDelegate(
+                      CustomTabBar(
+                        controller: _tabController,
+                        tabs: const [
+                          AppStrings.overview,
+                          AppStrings.behaviour,
+                          AppStrings.danger,
+                          AppStrings.more,
+                        ],
+                      ),
+                    ),
+                    pinned: true,
+                  ),
+                ];
+              },
+              body: Stack(
+                children: [
+                  TabBarView(
+                    controller: _tabController,
                     children: [
-                      // Badges
-                      _SnakeBadges(result: result),
-
-                      // Warning Banner
-                      if (showWarning) const WarningBanner(),
-
-                      // Match Confidence (Simplified or kept as is if informative)
-                      // We can keep it but maybe we don't need the header parts inside it?
-                      // For now, let's keep it as is, but it might be redundant.
-                      // Let's hide it if it's too redundant, but it has the percentage.
-                      // Maybe we can create a simpler version or just keep it.
-                      // MatchConfidenceCard(result: result),
-                      // Actually, the user's screenshot doesn't seem to show the confidence card in the middle.
-                      // I will omit it for now to match "this layout" closer, or maybe it's below?
-                      // The prompt says "entire page should be scrollable... not just the card part".
-                      // The previous card part was likely the MatchConfidenceCard.
-                      // I'll leave it out as the header now contains the main info.
+                      _OverviewTab(result: result),
+                      _BehaviourTab(result: result),
+                      _DangerTab(result: result),
+                      _MoreTab(result: result),
                     ],
                   ),
-                ),
-                SliverPersistentHeader(
-                  delegate: _SliverAppBarDelegate(
-                    CustomTabBar(
-                      controller: _tabController,
-                      tabs: const [
-                        AppStrings.overview,
-                        AppStrings.behaviour,
-                        AppStrings.danger,
-                        AppStrings.more,
-                      ],
+
+                  // Floating Action Button for favorites
+                  Positioned(
+                    bottom: MediaQuery.of(context).padding.bottom + 24,
+                    right: 24,
+                    child: _FavoriteFloatingButton(
+                      isFavorite: isFavorite,
+                      onTap: _toggleFavorite,
                     ),
                   ),
-                  pinned: true,
-                ),
-              ];
-            },
-            body: Stack(
-              children: [
-                TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _OverviewTab(result: result),
-                    _BehaviourTab(result: result),
-                    _DangerTab(result: result),
-                    _MoreTab(result: result),
-                  ],
-                ),
-
-                // Floating Action Button for favorites
-                Positioned(
-                  bottom: MediaQuery.of(context).padding.bottom + 24,
-                  right: 24,
-                  child: _FavoriteFloatingButton(
-                    isFavorite: isFavorite,
-                    onTap: _toggleFavorite,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -682,8 +685,10 @@ class _OverviewTab extends StatelessWidget {
                   child: Text(
                     AppStrings.disclaimer,
                     textAlign: TextAlign.center,
-                    style:
-                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                    style: TextStyle(
+                      color: context.textMutedColor,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],
@@ -792,8 +797,10 @@ class _BehaviourTab extends StatelessWidget {
                   child: Text(
                     AppStrings.disclaimer,
                     textAlign: TextAlign.center,
-                    style:
-                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                    style: TextStyle(
+                      color: context.textMutedColor,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],
@@ -926,8 +933,10 @@ class _DangerTab extends StatelessWidget {
                   child: Text(
                     AppStrings.disclaimer,
                     textAlign: TextAlign.center,
-                    style:
-                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                    style: TextStyle(
+                      color: context.textMutedColor,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],
@@ -993,8 +1002,10 @@ class _MoreTab extends StatelessWidget {
                   child: Text(
                     AppStrings.disclaimer,
                     textAlign: TextAlign.center,
-                    style:
-                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                    style: TextStyle(
+                      color: context.textMutedColor,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],

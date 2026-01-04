@@ -11,6 +11,8 @@ import '../../providers/onboarding_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../common/widgets/animated_dialog.dart';
 import '../common/widgets/cupertino_card.dart';
+import '../common/widgets/page_transition.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Settings screen with iOS-style design
 class SettingsScreen extends ConsumerWidget {
@@ -41,58 +43,60 @@ class SettingsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Appearance Section
-          _SettingsGroup(
-            title: AppStrings.appearance.toUpperCase(),
-            children: [
-              _SettingsTile(
-                icon: MingCuteIcons.mgc_palette_line,
-                title: AppStrings.theme,
-                value: themeMode.displayName,
-                onTap: () => _showThemeDialog(context, ref, themeMode),
-              ),
-            ],
-          ),
+      body: ScreenPageTransition(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Appearance Section
+            _SettingsGroup(
+              title: AppStrings.appearance.toUpperCase(),
+              children: [
+                _SettingsTile(
+                  icon: MingCuteIcons.mgc_palette_line,
+                  title: AppStrings.theme,
+                  value: themeMode.displayName,
+                  onTap: () => _showThemeDialog(context, ref, themeMode),
+                ),
+              ],
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // General Section
-          _SettingsGroup(
-            title: AppStrings.general.toUpperCase(),
-            children: [
-              _SettingsTile(
-                icon: MingCuteIcons.mgc_presentation_2_line,
-                title: AppStrings.viewOnboarding,
-                onTap: () => _viewOnboarding(context, ref),
-              ),
-            ],
-          ),
+            // General Section
+            _SettingsGroup(
+              title: AppStrings.general.toUpperCase(),
+              children: [
+                _SettingsTile(
+                  icon: MingCuteIcons.mgc_presentation_2_line,
+                  title: AppStrings.viewOnboarding,
+                  onTap: () => _viewOnboarding(context, ref),
+                ),
+              ],
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // About Section
-          _SettingsGroup(
-            title: AppStrings.about.toUpperCase(),
-            children: [
-              _SettingsTile(
-                icon: MingCuteIcons.mgc_information_line,
-                title: AppStrings.appName,
-                value: 'v1.0.0',
-              ),
-            ],
-          ),
+            // About Section
+            _SettingsGroup(
+              title: AppStrings.about.toUpperCase(),
+              children: [
+                _SettingsTile(
+                  icon: MingCuteIcons.mgc_information_line,
+                  title: AppStrings.appName,
+                  value: 'v1.0.0',
+                ),
+              ],
+            ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          // Developer Section
-          _SettingsGroup(
-            title: 'DEVELOPER',
-            children: const [_DeveloperCard()],
-          ),
-        ],
+            // Developer Section
+            _SettingsGroup(
+              title: 'DEVELOPER',
+              children: const [_DeveloperCard()],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -319,44 +323,59 @@ class _DeveloperCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // Developer profile image
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: const DecorationImage(
-                image: AssetImage(
-                  'assets/images/ui_illustrations/dev_profile.png',
-                ),
-                fit: BoxFit.cover,
+          // Developer profile image & name
+          InkWell(
+            onTap: () async {
+              final Uri url = Uri.parse('https://debojyoticodes.in');
+              if (!await launchUrl(url)) {
+                // Ignore error if cannot launch
+              }
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: const DecorationImage(
+                        image: AssetImage(
+                          'assets/images/ui_illustrations/dev_profile.png',
+                        ),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Debojyoti Chakraborty',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '(pseudo_maverick)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textTertiaryColor,
+                    ),
+                  ),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
             ),
-          ),
-          const SizedBox(height: 12),
-
-          // Developer name
-          Text(
-            'Debojyoti Chakraborty',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: context.textPrimaryColor,
-            ),
-          ),
-          const SizedBox(height: 2),
-
-          // Developer handle
-          Text(
-            '(pseudo_maverick)',
-            style: TextStyle(fontSize: 12, color: context.textTertiaryColor),
           ),
         ],
       ),
