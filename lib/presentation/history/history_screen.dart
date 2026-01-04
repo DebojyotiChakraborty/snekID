@@ -184,13 +184,13 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                   context.isDarkMode
                       ? context.surfaceLightColor
                       : context.backgroundTertiaryColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(100),
             ),
             child: TabBar(
               controller: _tabController,
               indicator: BoxDecoration(
                 color: context.backgroundColor,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(100),
               ),
               labelColor: context.textPrimaryColor,
               unselectedLabelColor: context.textTertiaryColor,
@@ -332,7 +332,7 @@ class _HistoryCard extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
           color: AppColors.error,
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: const Icon(
           MingCuteIcons.mgc_delete_2_line,
@@ -573,7 +573,7 @@ class _FavoriteCard extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
           color: AppColors.error,
-          borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: const Icon(
           MingCuteIcons.mgc_delete_2_line,

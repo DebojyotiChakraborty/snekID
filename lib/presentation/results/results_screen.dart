@@ -663,10 +663,31 @@ class _OverviewTab extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            AppStrings.disclaimer,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.textMutedColor, fontSize: 11),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    MingCuteIcons.mgc_alert_line,
+                    size: 12,
+                    color: context.textMutedColor,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    AppStrings.disclaimer,
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -752,10 +773,31 @@ class _BehaviourTab extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            AppStrings.disclaimer,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.textMutedColor, fontSize: 11),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    MingCuteIcons.mgc_alert_line,
+                    size: 12,
+                    color: context.textMutedColor,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    AppStrings.disclaimer,
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -865,10 +907,31 @@ class _DangerTab extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          Text(
-            AppStrings.disclaimer,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.textMutedColor, fontSize: 11),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    MingCuteIcons.mgc_alert_line,
+                    size: 12,
+                    color: context.textMutedColor,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    AppStrings.disclaimer,
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -911,10 +974,31 @@ class _MoreTab extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          Text(
-            AppStrings.disclaimer,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.textMutedColor, fontSize: 11),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    MingCuteIcons.mgc_alert_line,
+                    size: 12,
+                    color: context.textMutedColor,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    AppStrings.disclaimer,
+                    textAlign: TextAlign.center,
+                    style:
+                        TextStyle(color: context.textMutedColor, fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

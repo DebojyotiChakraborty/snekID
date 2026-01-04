@@ -21,7 +21,7 @@ class CustomTabBar extends StatelessWidget {
         color: context.isDarkMode
             ? AppColors.surfaceLightDark
             : AppColors.surfaceLightLight,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(100),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -43,7 +43,7 @@ class CustomTabBar extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: context.backgroundColor,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(100),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.04),

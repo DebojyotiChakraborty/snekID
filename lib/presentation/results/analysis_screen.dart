@@ -158,12 +158,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
                     // Loading text
                     Text(
                       AppStrings.analyzing,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: context.textPrimaryColor,
-                      ),
+                      style: Theme.of(context).textTheme.displaySmall,
                     ),
 
                     const SizedBox(height: 12),
@@ -173,12 +168,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen>
                       child: Text(
                         'Please wait while our AI is identifying the snake species and pulling up information...',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: context.textSecondaryColor,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
 
