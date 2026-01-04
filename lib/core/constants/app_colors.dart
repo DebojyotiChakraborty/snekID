@@ -44,22 +44,22 @@ class AppColors {
     0xFF404040,
   ); // Updating to match "Cards" if used interchangeably
   static const Color textPrimaryDark = Color(0xFFFFFFFF);
-  static const Color textSecondaryDark = Color(0xFFB1BAC4);
+  static const Color textSecondaryDark = Color(0xFF909090);
   static const Color textTertiaryDark = Color(0xFF8B949E);
   static const Color textMutedDark = Color(0xFF6E7681);
   static const Color borderDark = Color(0xFF30363D);
   static const Color borderLightDark = Color(0xFF21262D);
 
   // ============ LIGHT THEME COLORS ============
-  static const Color backgroundLight = Color(0xFFFFFFFF);
+  static const Color backgroundLight = Color(0xFFFEFEFE);
   static const Color backgroundSecondaryLight = Color(0xFFF6F8FA);
   static const Color backgroundTertiaryLight = Color(0xFFE8EAED);
   static const Color surfaceLight = Color(0xFFECECEC); // Cards
   static const Color surfaceLightLight = Color(
     0xFFECECEC,
   ); // Updating to match "Cards"
-  static const Color textPrimaryLight = Color(0xFF1F2328);
-  static const Color textSecondaryLight = Color(0xFF57606A);
+  static const Color textPrimaryLight = Color(0xFF000000);
+  static const Color textSecondaryLight = Color(0xFF909090);
   static const Color textTertiaryLight = Color(0xFF6E7781);
   static const Color textMutedLight = Color(0xFF8C959F);
   static const Color borderLight = Color(0xFFD0D7DE);

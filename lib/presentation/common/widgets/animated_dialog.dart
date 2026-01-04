@@ -6,6 +6,8 @@ import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'haptic_button.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
+import 'cupertino_card.dart';
 
 /// A reusable animated dialog with iOS-style design, frosted glass effect,
 /// and slide-up animation similar to CaptureConfirmationDialog.
@@ -96,101 +98,92 @@ class _AnimatedDialogState extends State<AnimatedDialog> {
           24,
           MediaQuery.of(context).padding.bottom + 24,
         ),
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(30),
-                blurRadius: 16,
-                spreadRadius: 0,
-                offset: const Offset(0, -4),
-              ),
-            ],
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const SquircleBorder(
+            radius: BorderRadius.all(
+              Radius.circular(AppConstants.alertBorderRadius),
+            ),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color:
-                      isDark
-                          ? const Color(0xFF2C2C2E).withValues(alpha: 0.85)
-                          : const Color(0xFFE5E5EA).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Title
+          clipBehavior: Clip.antiAlias,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color:
+                    isDark
+                        ? const Color(0xFF2C2C2E).withValues(alpha: 0.85)
+                        : const Color(0xFFE5E5EA).withValues(alpha: 0.85),
+              ),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title
+                    Text(
+                      widget.title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+
+                    // Subtitle
+                    if (widget.subtitle != null) ...[
+                      const SizedBox(height: 8),
                       Text(
-                        widget.title,
+                        widget.subtitle!,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: isDark ? Colors.white70 : Colors.black54,
                         ),
-                      ),
-
-                      // Subtitle
-                      if (widget.subtitle != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.subtitle!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: isDark ? Colors.white70 : Colors.black54,
-                          ),
-                        ),
-                      ],
-
-                      // Custom content
-                      if (widget.content != null) ...[
-                        const SizedBox(height: 16),
-                        widget.content!,
-                      ],
-
-                      const SizedBox(height: 20),
-
-                      // Buttons row
-                      Row(
-                        children: [
-                          // Cancel button
-                          Expanded(
-                            child: _DialogButton(
-                              label: widget.cancelLabel,
-                              onPressed: widget.onCancel,
-                              isPrimary: false,
-                              isDark: isDark,
-                            ),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          // Confirm button
-                          Expanded(
-                            child: _DialogButton(
-                              label: widget.confirmLabel,
-                              onPressed: widget.onConfirm,
-                              isPrimary: true,
-                              isDestructive: widget.isDestructive,
-                              isDark: isDark,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
-                  ),
+
+                    // Custom content
+                    if (widget.content != null) ...[
+                      const SizedBox(height: 16),
+                      widget.content!,
+                    ],
+
+                    const SizedBox(height: 20),
+
+                    // Buttons row
+                    Row(
+                      children: [
+                        // Cancel button
+                        Expanded(
+                          child: _DialogButton(
+                            label: widget.cancelLabel,
+                            onPressed: widget.onCancel,
+                            isPrimary: false,
+                            isDark: isDark,
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // Confirm button
+                        Expanded(
+                          child: _DialogButton(
+                            label: widget.confirmLabel,
+                            onPressed: widget.onConfirm,
+                            isPrimary: true,
+                            isDestructive: widget.isDestructive,
+                            isDark: isDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -357,7 +350,6 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -368,137 +360,119 @@ class _ThemePickerDialogState extends State<ThemePickerDialog> {
         child: SafeArea(
           child: Material(
             color: Colors.transparent,
-            child: Container(
-              width: double.infinity,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(30),
-                    blurRadius: 16,
-                    spreadRadius: 0,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
+            shape: const SquircleBorder(
+              radius: BorderRadius.all(
+                Radius.circular(AppConstants.alertBorderRadius),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                    decoration: BoxDecoration(
-                      color:
-                          isDark
-                              ? const Color(0xFF1C1C1E).withOpacity(0.85)
-                              : const Color(0xFFE5E5EA).withOpacity(0.85),
-                      borderRadius: BorderRadius.circular(24),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                decoration: BoxDecoration(
+                  color:
+                      isDark
+                          ? const Color(0xFF1C1C1E).withOpacity(0.85)
+                          : const Color(0xFFE5E5EA).withOpacity(0.85),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      'App Theme',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title
-                        Text(
-                          'App Theme',
+                    const SizedBox(height: 24),
+
+                    // Options
+                    ...List.generate(_themeOptions.length, (index) {
+                      final option = _themeOptions[index];
+                      final isSelected = index == _selectedIndex;
+
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          setState(() => _selectedIndex = index);
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            children: [
+                              Icon(
+                                option['icon'] as IconData,
+                                size: 24,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Text(
+                                  option['label'] as String,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        isDark
+                                            ? Colors.white.withOpacity(0.9)
+                                            : Colors.black.withOpacity(0.8),
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white : Colors.black,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: isDark ? Colors.black : Colors.white,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+
+                    const SizedBox(height: 32),
+
+                    // Continue Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: HapticButton(
+                        onPressed: () {
+                          widget.onSelected(_selectedIndex);
+                          Navigator.of(context).pop();
+                        },
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.black,
+                        borderRadius: 100,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: const Text(
+                          'Continue',
                           style: TextStyle(
                             fontFamily: 'Inter',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 24),
-
-                        // Options
-                        ...List.generate(_themeOptions.length, (index) {
-                          final option = _themeOptions[index];
-                          final isSelected = index == _selectedIndex;
-
-                          return GestureDetector(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              setState(() => _selectedIndex = index);
-                            },
-                            behavior: HitTestBehavior.opaque,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    option['icon'] as IconData,
-                                    size: 24,
-                                    color: isDark ? Colors.white : Colors.black,
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      option['label'] as String,
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color:
-                                            isDark
-                                                ? Colors.white.withOpacity(0.9)
-                                                : Colors.black.withOpacity(0.8),
-                                      ),
-                                    ),
-                                  ),
-                                  if (isSelected)
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            isDark
-                                                ? Colors.white
-                                                : Colors.black,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.check,
-                                        size: 16,
-                                        color:
-                                            isDark
-                                                ? Colors.black
-                                                : Colors.white,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-
-                        const SizedBox(height: 32),
-
-                        // Continue Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: HapticButton(
-                            onPressed: () {
-                              widget.onSelected(_selectedIndex);
-                              Navigator.of(context).pop();
-                            },
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.black,
-                            borderRadius: 100,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: const Text(
-                              'Continue',
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),

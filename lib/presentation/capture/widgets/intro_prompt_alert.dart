@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../common/widgets/cupertino_card.dart';
 
 /// First-launch intro prompt alert with slide-up animation
 class IntroPromptAlert extends StatefulWidget {
@@ -73,20 +75,14 @@ class _IntroPromptAlertState extends State<IntroPromptAlert>
       position: _offsetAnimation,
       child: Container(
         margin: const EdgeInsets.all(24),
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(30),
-              blurRadius: 16,
-              spreadRadius: 0,
-              offset: const Offset(0, -4),
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const SquircleBorder(
+            radius: BorderRadius.all(
+              Radius.circular(AppConstants.alertBorderRadius),
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
+          ),
+          clipBehavior: Clip.antiAlias,
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
@@ -96,7 +92,6 @@ class _IntroPromptAlertState extends State<IntroPromptAlert>
                     context.isDarkMode
                         ? const Color(0xFF1C1C1E).withOpacity(0.85)
                         : const Color(0xFFE5E5EA).withOpacity(0.85),
-                borderRadius: BorderRadius.circular(24),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
